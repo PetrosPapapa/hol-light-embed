@@ -47,7 +47,7 @@ override_interface("%",`Product`);;
 parse_as_infix("|=",(11,"right"));;
 
 (* Consequence rules *)
-let prop_RULES,prop_INDUCT,prop_CASES = new_inductive_definition 
+let propRULES,propINDUCT,propCASES = new_inductive_definition 
 `(!a. ' a |= a) /\
 
  (!G a c. (G |= c) ==> (G ^ ' a |= c)) /\
@@ -84,7 +84,7 @@ let [pID;
      pIL; pIR
    ] = 
   map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
-    (CONJUNCTS prop_RULES);;
+    (CONJUNCTS propRULES);;
   
 
 
@@ -102,47 +102,42 @@ top_thm();;
 
 b();;
 
-let xthm = prop_II;;
-let xr = mk_meta_rule prop_II;;
+let lamINDUCT,lamRECURSION = define_type
+    " Lambda = Var A
+     | App Lambda Lambda
+     | Prod (Lambda#Lambda)
+     | Lam A Lambda
+";;
+
+parse_as_infix("@@",(10,"right"));; 
+override_interface("@@",`App`);;
 
 
-let rule_seqtac ?(glfrees=([]:term list)) instlist thm = apply_seqtac ~glfrees:glfrees rulem_seqtac instlist (mk_meta_rule thm);;
+let tmINDUCT,tmRECURSION = define_type "TTerm = Annotate A Prop";;
+
+parse_as_infix("::",(16,"right"));;
+override_interface("::",`Annotate`);;
 
 
-let (rulem_seqtac:(term list)->(term*term) list->meta_rule->(term list) etactic) =
-  fun glf instlist r metas ((asl,w) as g) ->
-    let r = inst_meta_rule_vars instlist r glf in  
-    let rmetas = subtract (meta_rule_frees r) (itlist union (map (frees o snd) instlist) glf)  in
-    let avoids = subtract glf metas in
-    
-    let ins = try ( seq_match avoids (rmetas@metas) (fst3 r) w ) 
-	     with Failure s -> failwith ("Rule doesn't match: " ^ s) in
+(* Consequence operator *)
+parse_as_infix("|==",(11,"right"));;
 
-    let (c,new_hyps,thm) as ri = inst_meta_rule ins r
-    and (asl,w) as g = inst_goal ins g in
+let chRULES,chINDUCT,chCASES = new_inductive_definition 
+`(!a. ' (Var x :: a) |== Var x :: a) /\
 
-    let new_goals = map (create_seq_goal asl) new_hyps in
+ (!G a c. (G |== Var z :: c) ==> (G ^ ' (Var x :: a) |== Var z :: c)) /\
+ (!G a c. (G ^ '(Var x :: a) ^ '(Var y :: a) |== Var z :: c) ==> (G ^ ' (Var y :: a) |== Var z :: c)) /\
+ (!G D a c. (G |= Var z :: a) /\ (D ^ ' (Var z :: a) |== Var x :: c) ==> (G ^ D |== Var x :: c)) /\
 
-    let newmetas = intersect rmetas (meta_rule_frees ri) in
-		    
-    let rec create_dischl = 
-      fun (asms,g) -> if (asms = []) then [] else 
-	((concl o snd o hd) asms)::(create_dischl ((tl asms),g)) in
-    let dischls = map create_dischl new_hyps in
 
-    ((newmetas,ins),new_goals,fun i l ->  
-      let thm = INSTANTIATE_ALL i thm in (* NORM_MSET_INST_ALL i thm in *)
-      let thm2 = PROVE_MULTISET_EQ (concl thm) (instantiate i w) in
+ (!G D a b. (G |== Var x :: a) /\ (D |== Var y :: b) ==> (G ^ D |== Prod (x,y) :: (a % b))) /\
+ (!G a b c. (G ^ ' a |= c) ==> (G ^ ' (Var x :: (a % b)) |= c)) /\
+ (!G a b c. (G ^ ' b |= c) ==> (G ^ ' (a % b) |= c)) /\
 
-      let res = List.fold_left 
-	(fun t1 t2 -> MSET_PROVE_HYP (INSTANTIATE_ALL i t2) t1) thm 
-	(map (dischi_pair i) (zip dischls l)) in
+ (!G D a b c. (G ^ ' b |= c) /\ (D |= a) ==> (G ^ D ^ ' (a --> b) |= c)) /\
+ (!G a b. (G ^ ' a |= b) ==> (G |= (a --> b)))
+` ;;
 (*
-      print_string "r:" ; print_thm res ; print_newline(); 
-  print_string "ret:" ; print_thm (EQ_MP (INSTANTIATE_ALL i thm2) res) ; print_newline();
-*)
-      EQ_MP thm2 res),newmetas@metas;;
-
 
 
 (* Some theorems: *)
@@ -243,3 +238,4 @@ prove_seq (`' d ^ ' ((a**c) --> b) ^ ' a ^ ' d ^ ' c |= (b**d**d)`,
 	   EORELSE (ruleseq ill_timesR) (ruleseq ill_id);
 	   ruleseq ill_id]);;
 
+*)
