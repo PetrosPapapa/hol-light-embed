@@ -18,8 +18,11 @@
    The subset only includes conjunction/products and implication/funtions for
    demonstration purposes.
 
-   It includes an embedding of the logic alone (|=) and the correspondence
-   (|==) in a sequent calculus style.
+   We convert the rules from natural deduction to sequent calculus following:
+   Girard, J.Y., Taylor, P. and Lafont, Y., 1989. 'Proofs and types'
+   Cambridge: Cambridge university press.
+
+   We embed the logic alone (|=) as well as its correspondence (|==).
                                                                              *)
 (* ========================================================================= *)
 
@@ -35,48 +38,112 @@ let prop_INDUCT,prop_RECURSION = define_type
 
 (* Pretty printing abbreviations *)
 
-parse_as_infix("-->",(14,"right"));;
+parse_as_infix("-->",(13,"right"));;
 override_interface("-->",`Implies`);;
-parse_as_infix("%",(13,"right"));;
+parse_as_infix("%",(14,"right"));;
 override_interface("%",`Product`);;
 
-(* Linear consequence *)
+(* Consequence operator *)
 parse_as_infix("|=",(11,"right"));;
 
-let ilinear_RULES,ilinear_INDUCT,ilinear_CASES = new_inductive_definition
+(* Consequence rules *)
+let prop_RULES,prop_INDUCT,prop_CASES = new_inductive_definition 
 `(!a. ' a |= a) /\
- (mempty |= IOne) /\
- (!a G. (G |= a) ==> ( G ^ ' IOne |= a )) /\
- (!a b c G. ((G ^ ' a ^ ' b) |= c) ==> ( (G ^ ' (a ** b)) |= c)) /\
- (!a b G D. (G |= a) /\ (D |= b) ==> ( (G ^ D) |= (a ** b))) /\
- (!a b c G D. (G |= a) /\ (D ^ ' b |= c) ==> (G ^ D ^ '(a --> b) |= c)) /\
- (!a b G. ( G ^ ' a |= b ) ==> ( G |= (a --> b) )) /\
- (!a b d G. (G ^ ' a |= d) /\ (G ^ ' b |= d) ==> ((G ^ '(a ++ b)) |= d)) /\
- (!a b G. (G |= a) ==> (G |= (a ++ b))) /\
- (!a b G. (G |= b) ==> (G |= (a ++ b))) /\
- (!a b d G. (G ^ ' a |= d) ==> (G ^ ' (a && b)) |= d) /\
- (!a b d G. (G ^ ' b |= d) ==> (G ^ ' (a && b)) |= d) /\
- (!a b G. (G |= a) /\ (G |= b) ==> (G |= (a && b))) /\
- (!a d G. (G |= d) ==> ((G ^ ' (!!a)) |= d)) /\
- (!a d G. (G ^ ' a |= d) ==> ((G ^ ' (!!a)) |= d)) /\
- (!a d G. (G ^ ' (!!a) ^ ' (!!a) |= d) ==> ((G ^ ' (!!a)) |= d)) /\
- (!a c G D. (G |= a) /\ (D ^ ' a |= c) ==> (G ^ D |= c))
-`;;
 
-(* Split the rules to be used as IsaHOL rules! *)
+ (!G a c. (G |= c) ==> (G ^ ' a |= c)) /\
+ (!G a c. (G ^ ' a ^ ' a |= c) ==> (G ^ ' a |= c)) /\
+ (!G D a c. (G |= a) /\ (D ^ ' a |= c) ==> (G ^ D |= c)) /\
 
-let [ill_id;
-     ill_oneR;ill_oneL;
-     ill_timesL;ill_timesR;
-     ill_impL;ill_impR;
-     ill_plusL;ill_plusR1;ill_plusR2;
-     ill_withL1; ill_withL2; ill_withR;
-     ill_ofcW; ill_ofcL; ill_ofcC;
-     ill_cut
+
+ (!G D a b. (G |= a) /\ (D |= b) ==> (G ^ D |= a % b)) /\
+ (!G a b c. (G ^ ' a |= c) ==> (G ^ ' (a % b) |= c)) /\
+ (!G a b c. (G ^ ' b |= c) ==> (G ^ ' (a % b) |= c)) /\
+
+ (!G D a b c. (G ^ ' b |= c) /\ (D |= a) ==> (G ^ D ^ ' (a --> b) |= c)) /\
+ (!G a b. (G ^ ' a |= b) ==> (G |= (a --> b)))
+` ;;
+
+
+(*let prop_RULES,prop_INDUCT,prop_CASES = new_inductive_definition 
+`(!G a. G ^ ' a |= a) /\
+ (!G. G |= Truth) /\
+ (!G a b. G ^ ' a ^ ' b |= a % b) /\
+ (!G a b. G ^ '(a % b) |= a) /\
+ (!G a b. G ^ '(a % b) |= b) /\
+ (!G a b. (G ^ ' (a --> b) ^ ' a) |= b) /\
+ (!G a b. ((G ^ ' a) |= b) ==> (G |= (a --> b))) 
+` ;;
+*)
+
+
+(* Split the rules to be used as meta-rules! *)
+
+let [pID;
+     pW; pC; pCut; 
+     pXR; pXL1; pXL2;
+     pIL; pIR
    ] = 
   map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
-    (CONJUNCTS ilinear_RULES);;
+    (CONJUNCTS prop_RULES);;
   
+
+
+g `mempty |= X % Y --> Y % X` ;;
+e (GEN_TAC);;
+eseq (ruleseq pIR);;
+eseq (ruleseq pC);;
+eseq (ruleseq pXR);;
+eseq (ruleseq pXL2);;
+eseq (ruleseq pID);;
+eseq (ruleseq pXL1);;
+eseq (ruleseq pID);;
+
+top_thm();;
+
+b();;
+
+let xthm = prop_II;;
+let xr = mk_meta_rule prop_II;;
+
+
+let rule_seqtac ?(glfrees=([]:term list)) instlist thm = apply_seqtac ~glfrees:glfrees rulem_seqtac instlist (mk_meta_rule thm);;
+
+
+let (rulem_seqtac:(term list)->(term*term) list->meta_rule->(term list) etactic) =
+  fun glf instlist r metas ((asl,w) as g) ->
+    let r = inst_meta_rule_vars instlist r glf in  
+    let rmetas = subtract (meta_rule_frees r) (itlist union (map (frees o snd) instlist) glf)  in
+    let avoids = subtract glf metas in
+    
+    let ins = try ( seq_match avoids (rmetas@metas) (fst3 r) w ) 
+	     with Failure s -> failwith ("Rule doesn't match: " ^ s) in
+
+    let (c,new_hyps,thm) as ri = inst_meta_rule ins r
+    and (asl,w) as g = inst_goal ins g in
+
+    let new_goals = map (create_seq_goal asl) new_hyps in
+
+    let newmetas = intersect rmetas (meta_rule_frees ri) in
+		    
+    let rec create_dischl = 
+      fun (asms,g) -> if (asms = []) then [] else 
+	((concl o snd o hd) asms)::(create_dischl ((tl asms),g)) in
+    let dischls = map create_dischl new_hyps in
+
+    ((newmetas,ins),new_goals,fun i l ->  
+      let thm = INSTANTIATE_ALL i thm in (* NORM_MSET_INST_ALL i thm in *)
+      let thm2 = PROVE_MULTISET_EQ (concl thm) (instantiate i w) in
+
+      let res = List.fold_left 
+	(fun t1 t2 -> MSET_PROVE_HYP (INSTANTIATE_ALL i t2) t1) thm 
+	(map (dischi_pair i) (zip dischls l)) in
+(*
+      print_string "r:" ; print_thm res ; print_newline(); 
+  print_string "ret:" ; print_thm (EQ_MP (INSTANTIATE_ALL i thm2) res) ; print_newline();
+*)
+      EQ_MP thm2 res),newmetas@metas;;
+
+
 
 (* Some theorems: *)
 let TIMES_COMM = prove_seq( `'(b**a) |= a ** b`,
