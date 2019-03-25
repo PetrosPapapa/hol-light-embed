@@ -89,7 +89,6 @@ let [pID;
 
 
 g `mempty |= X % Y --> Y % X` ;;
-e (GEN_TAC);;
 eseq (ruleseq pIR);;
 eseq (ruleseq pC);;
 eseq (ruleseq pXR);;
@@ -100,7 +99,6 @@ eseq (ruleseq pID);;
 
 top_thm();;
 
-b();;
 
 let lamINDUCT,lamRECURSION = define_type
     " Lambda = Var A
@@ -113,6 +111,19 @@ parse_as_infix("@@",(10,"right"));;
 override_interface("@@",`App`);;
 
 
+let lamFst_DEF = new_recursive_definition lamRECURSION 
+                `Fst (Prod x :(A)Lambda) = FST x` ;; 
+
+let lamFst = prove (`!x y. Fst (Prod (x,y)) = x`, REWRITE_TAC[lamFst_DEF;FST]);;
+
+
+let lamSnd_DEF = new_recursive_definition lamRECURSION 
+                `Snd (Prod x :(A)Lambda) = SND x` ;; 
+
+let lamSnd = prove (`!x y. Snd (Prod (x,y)) = y`, REWRITE_TAC[lamSnd_DEF;SND]);;
+
+
+
 let tmINDUCT,tmRECURSION = define_type "TTerm = Annotate A Prop";;
 
 parse_as_infix("::",(16,"right"));;
@@ -123,20 +134,42 @@ override_interface("::",`Annotate`);;
 parse_as_infix("|==",(11,"right"));;
 
 let chRULES,chINDUCT,chCASES = new_inductive_definition 
-`(!a. ' (Var x :: a) |== Var x :: a) /\
+`(!a x. ' (x :: a) |== x :: a) /\
 
- (!G a c. (G |== Var z :: c) ==> (G ^ ' (Var x :: a) |== Var z :: c)) /\
- (!G a c. (G ^ '(Var x :: a) ^ '(Var y :: a) |== Var z :: c) ==> (G ^ ' (Var y :: a) |== Var z :: c)) /\
- (!G D a c. (G |= Var z :: a) /\ (D ^ ' (Var z :: a) |== Var x :: c) ==> (G ^ D |== Var x :: c)) /\
+ (!G a c x z. (G |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
+ (!G a c x z. (G ^ '(x :: a) ^ '(x :: a) |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
+ (!G D a c x z. (G |== z :: a) /\ (D ^ ' (z :: a) |== x :: c) ==> (G ^ D |== x :: c)) /\
 
 
- (!G D a b. (G |== Var x :: a) /\ (D |== Var y :: b) ==> (G ^ D |== Prod (x,y) :: (a % b))) /\
- (!G a b c. (G ^ ' a |= c) ==> (G ^ ' (Var x :: (a % b)) |= c)) /\
- (!G a b c. (G ^ ' b |= c) ==> (G ^ ' (a % b) |= c)) /\
+ (!G D a b x y. (G |== x :: a) /\ (D |== y :: b) ==> (G ^ D |== Prod (x,y) :: (a % b))) /\
+ (!G a b c x. (G ^ ' (Fst x :: a) |== c) ==> (G ^ ' (x :: (a % b)) |== c)) /\
+ (!G a b c x. (G ^ ' (Snd x :: b) |== c) ==> (G ^ ' (x :: (a % b)) |== c)) /\
 
- (!G D a b c. (G ^ ' b |= c) /\ (D |= a) ==> (G ^ D ^ ' (a --> b) |= c)) /\
- (!G a b. (G ^ ' a |= b) ==> (G |= (a --> b)))
+ (!G D a b c f y z. (G ^ ' ((f @@ y) :: b) |== z :: c) /\ (D |== (y :: a)) ==> (G ^ D ^ ' (f :: (a --> b)) |== z :: c)) /\
+ (!G a b x y. (G ^ ' (Var x :: a) |== (y :: b)) ==> (G |== Lam x y :: (a --> b)))
 ` ;;
+
+let [chID;
+     chW; chC; chCut; 
+     chXR; chXL1; chXL2;
+     chIL; chIR
+   ] = 
+  map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
+    (CONJUNCTS chRULES);;
+;;
+
+g `?P:(num)Lambda. mempty |== P :: (X % Y --> Y % X)` ;;
+e (META_EXISTS_TAC);;
+eseq (ruleseq chIR);;
+eseq (ruleseq chC);;
+eseq (ruleseq chXR);;
+eseq (ruleseq chXL2);;
+eseq (ruleseq chID);;
+eseq (ruleseq chXL1);;
+eseq (ruleseq chID);;
+
+top_thm();;
+instantiate (top_inst(p())) `P:(num)Lambda` ;;
 (*
 
 
