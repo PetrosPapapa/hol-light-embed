@@ -1,7 +1,9 @@
 # Object level reasoning with embedded logics in HOL Light
-## Petros Papapanagiotou (pe.p@ed.ac.uk) and Jacques Fleuriot (jdf@inf.ed.ac.uk)
-[Centre of Intelligent Systems and their Applications](http://web.inf.ed.ac.uk/cisa)
-[School of Informatics, University of Edinburgh](https://www.ed.ac.uk/informatics/)
+
+>Petros Papapanagiotou  
+>Jacques Fleuriot  
+>[Centre of Intelligent Systems and their Applications](http://web.inf.ed.ac.uk/cisa)  
+>[School of Informatics, University of Edinburgh](https://www.ed.ac.uk/informatics/)  
 
 
 ## About
@@ -12,7 +14,7 @@ It provides procedural tactics inspired by [Isabelle](https://isabelle.in.tum.de
 
 It also supports correspondences with computational terms in the style of Curry-Howard.
 
-Further information and background will be provided in a forthcoming publication.
+_Further information and background will be provided in a forthcoming publication._
 
 ### What this library does
 
@@ -56,7 +58,6 @@ The fastest way to install is by checking out [this fork of HOL Light](https://g
 
 ```
 git clone https://github.com/PetrosPapapa/hol-light.git
-
 ```
 
 The fork contains the required libraries as submodules which can be checked out as follows:
