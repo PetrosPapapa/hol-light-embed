@@ -8,7 +8,7 @@
 (* ========================================================================= *)
 
 (* Dependencies *)
-loads ("tools/embed.ml");;
+loads ("embed/sequent.ml");;
 
 (* Type declaration *)
 

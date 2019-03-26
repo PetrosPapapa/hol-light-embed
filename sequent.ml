@@ -80,8 +80,8 @@ let munion_match =
     let prop_ty = try ( (hd o snd o dest_type o type_of) gl )
       with Failure _ -> failwith "munion_match: invalid type" in
     
-    let gargs = flat_munion gl 
-    and rargs = flat_munion rl in
+    let gargs = flat_munion gl
+    and rargs = filter (not o is_mempty) (flat_munion rl) in
     let is_mset_var = fun x -> (is_var x) && not (mem x avoids) in
 
     let rargs_var,rargs_nonvar = partition is_mset_var rargs in
