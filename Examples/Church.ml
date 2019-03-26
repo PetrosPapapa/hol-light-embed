@@ -100,6 +100,13 @@ eseq (ruleseq pID);;
 top_thm();;
 
 
+
+(* ------------------------------------------------------------------------- *)
+(* Curry-Howard correspondence by Church                                     *)
+(* ------------------------------------------------------------------------- *)
+
+(* Lambda terms *)
+
 let lamINDUCT,lamRECURSION = define_type
     " Lambda = Var A
      | App Lambda Lambda
@@ -107,9 +114,12 @@ let lamINDUCT,lamRECURSION = define_type
      | Lam A Lambda
 ";;
 
+(* Application syntax sugar  *)
 parse_as_infix("@@",(10,"right"));; 
 override_interface("@@",`App`);;
 
+
+(* Projection functions for products *)
 
 let lamFst_DEF = new_recursive_definition lamRECURSION 
                 `Fst (Prod x :(A)Lambda) = FST x` ;; 
@@ -151,6 +161,8 @@ let hide_lam,show_lam =
              with Failure _ -> failwith ("show_procs: " ^
                                            "Curry-Howard lambda terms are already being shown normally."));;
     
+
+(* Hiding by default. Use "show_lam();;" to disable. *)
 hide_lam();;
 
 
@@ -196,18 +208,32 @@ let lamConstruct p st =
 let top_constr s = lamConstruct s (p());;
 
 
+(* Shorthand for an empty context *)
+let chEmpty ty = inst [ty,`:A`] `mempty:(((A)Lambda)TTerm)multiset` ;;
+
+
+(* ------------------------------------------------------------------------- *)
+(* Example proofs                                                            *) 
+(* ------------------------------------------------------------------------- *)
+
+(* Construct a function that swaps products around.                          *)
+
 g `?P:(num)Lambda. mempty |== P :: (X % Y --> Y % X)` ;;
 e (META_EXISTS_TAC);;
-eseq (ruleseq chI_R);;
-eseq (ruleseq chC);;
-eseq (ruleseq chX_R);;
-eseq (ruleseq chX_L2);;
-eseq (ruleseq chID);;
-eseq (ruleseq chX_L1);;
-eseq (ruleseq chID);;
+eseq (ruleseq chI_R);; (* implication R *)
+eseq (ruleseq chC);; (* contraction *)
+eseq (ruleseq chX_R);; (* conjunction R *)
+eseq (ruleseq chX_L2);; (* conjunction L2 *)
+eseq (ruleseq chID);; (* identity *)
+eseq (ruleseq chX_L1);; (* conjunction L1 *)
+eseq (ruleseq chID);; (* identity *)
 
-top_thm();;
-top_constr "P";;
+top_thm();; (* Validates the entire proof and reconstructs the theorem. *)
+top_constr "P";; (* Gives: Lam x0 (Prod (Snd (Var x0),Fst (Var x0))) *)
+
+
+(* Verification proof for the same term.                                     *)
+(* i.e. Does this function have the right type?                              *)
 
 g `mempty |== Lam x (Prod (Snd (Var x),Fst (Var x))) :: (X % Y --> Y % X)` ;;
 eseq (ruleseq chI_R);;
@@ -218,110 +244,163 @@ eseq (ruleseq chID);;
 eseq (ruleseq chX_L1);;
 eseq (ruleseq chID);;
 
-
 top_thm();;
-let xp = it;;
 
+
+(* 
+From the proof perspective, we are looking at commutativity of conjunction. 
+We want a lemma that we can use as a rule in future proofs.  
+*)
+
+(* 
+First we need to construct the corresponding lambda terms to make a valid rule.
+*)
+
+g `?a b. ' (a :: (X % Y)) |== b :: (Y % X)` ;;
+e (REPEAT META_EXISTS_TAC);;
+eseq (ruleseq chC);;
+eseq (ruleseq chX_R);;
+eseq (ruleseq chX_L2);;
+eseq (ruleseq chID);;
+eseq (ruleseq chX_L1);;
+eseq (ruleseq chID);;
+top_thm();;
+top_constr "a";; (* Gives: a *)
+top_constr "b";; (* Gives: Prod (Snd a,Fst a) *)
+
+(* 
+These are not the only possible terms, but they are valid. 
+We did not use any cuts so we are fine.
+We need meta-theory (cut elimination) to formally prove they are minimal terms in general.
+*)
 
 (*
-
-
-(* Some theorems: *)
-let TIMES_COMM = prove_seq( `'(b**a) |= a ** b`,
-					    EEVERY [
-					    ruleseq ill_timesL;
-					    rule_seqtac [`G`,`' a`] ill_timesR;
-					    ruleseq ill_id]);;
-
-let illtimes_commR = prove_seq (`G |= b ** a ===> G |= a ** b`,
-				ETHENL (EEVERY [
-				  ETAC (MIMP_TAC THEN DISCH_TAC);
-				  drule_seqtac [`c`,`a ** b`;`D`,`mempty:(ILinProp)multiset`] ill_cut]) [
-				  ETAC (MATCH_ACCEPT_TAC TIMES_COMM);
-				  ETAC assumption]);;
-
-let illtimes_commL = prove_seq (`G ^ ' (a ** b) |= c ===> G ^ ' (b ** a) |= c`,
-				ETHENL (EEVERY [
-				  ETAC (MIMP_TAC THEN DISCH_TAC);
-				  rule_seqtac [`a`,`a ** b`;`G`,`' (b ** a)`] ill_cut]) [
-				  ETAC (MATCH_ACCEPT_TAC TIMES_COMM);
-				  ETAC assumption]);;
-
-
-(* Now we can use these as new rules! *)
-
-prove_seq (`' ((A ** B)** C) |= (C ** (B ** A))`,
-	   EEVERY [
-	     ruleseq illtimes_commR;
-	     ruleseq ill_timesL;
-	     ETHENL (rule_seqtac [`D`,`' C`] ill_timesR)
-	     [ ruleseq illtimes_commR ; ruleseq ill_id ];
-	     ruleseq ill_id]);;
-
-
-let TIMES_ASSOC_L = prove_seq (`' ((a ** b) ** c) |= a ** (b ** c)`,
-			       EEVERY [
-				 EREPEAT (ruleseq ill_timesL);
-				 ETHENL (rule_seqtac [`G`,`' a`] ill_timesR) 
-				   [ ruleseq ill_id ; rule_seqtac [`G`,`' b`] ill_timesR ];
-				 ruleseq ill_id]);;
-
-let TIMES_ASSOC_R = prove_seq ( `' (a ** (b ** c)) |= (a ** b) ** c`,
-				EEVERY [
-				  EREPEAT (ruleseq ill_timesL); 
-				  ETHENL (rule_seqtac [`G`,`' a ^ ' b`] ill_timesR)
-				    [ ruleseq ill_timesR ; ruleseq ill_id ];
-				  ruleseq ill_id]);;
-
-let ONE_TIMES_L = prove_seq (`' (IOne ** a) |= a`,
-			     EEVERY [
-			       ruleseq ill_timesL;
-			       ruleseq ill_oneL;
-			       ruleseq ill_id]);;
-
-let ONE_TIMES_R = prove_seq (`' (a ** IOne) |= a`,
-		     	     EEVERY [
-			       ruleseq ill_timesL;
-			       ruleseq ill_oneL;
-			       ruleseq ill_id]);;
-
-let PLUS_COMM = prove_seq (`' (b ++ a) |= a ++ b`,
-		      ETHEN
-			(ETHENL (ruleseq ill_plusL) [ ruleseq ill_plusR2 ; ruleseq ill_plusR1 ])
-			(ruleseq ill_id));;
-
-let PLUS_A_A = prove_seq (`' (a ++ a) |= a`,
-		     ETHEN (ruleseq ill_plusL) (ruleseq ill_id));;
-
-let OFC_WITH_EQ_TIMES = prove_seq (`' (!!(a && b)) |= (a ** b)`,
-				   ETHEN (ETHENL (EEVERY [
-				     ruleseq ill_ofcC;
-				     ruleseq ill_timesR;
-				     ruleseq ill_ofcL])
-				     [ruleseq ill_withL1 ; ruleseq ill_withL2])
-				     (ruleseq ill_id));;
-
-let IMP_IMP_EQ_TIMES = prove_seq (`' (a-->(b-->c)) |= (a**b)-->c`,
-  EEVERY [
-    ruleseq ill_impR;
-    ruleseq ill_timesL;
-    ruleseq ill_impL;
-    ETRY (ruleseq ill_id);
-    rule_seqtac [`G`,`' b`] ill_impL;
-    ruleseq ill_id]);;
-
-let TIMES_EQ_IMP_IMP = prove_seq (`' ((a**b)-->c) |= a-->(b-->c)`,
-  EEVERY [
-    EREPEAT (ruleseq ill_impR);
-    ETHENL (rule_seqtac [`G`,`' a ^ ' b`] ill_impL)
-      [ ruleseq ill_timesR ; ruleseq ill_id ];
-    ruleseq ill_id]);;
-
-prove_seq (`' d ^ ' ((a**c) --> b) ^ ' a ^ ' d ^ ' c |= (b**d**d)`,
-	   EEVERY [
-	     ETHENL (rule_seqtac [`D`,`' d ^ ' d`] ill_timesR)
-	       [ rule_seqtac [`G`,`' a ^ ' c`] ill_impL ; ruleseq ill_timesR ];
-	   EORELSE (ruleseq ill_timesR) (ruleseq ill_id);
-	   ruleseq ill_id]);;
-
+Now we can construct a reusable lemma by packaging the proof.
 *)
+
+let TIMES_COMM = prove_seq( `' (a :: (X % Y)) |== Prod (Snd a, Fst a) :: (Y % X)`,
+                                            ETHENL 
+                                              (ETHEN (ruleseq chC) (ruleseq chX_R))
+                                              [
+                                                ETHEN (ruleseq chX_L2) (ruleseq chID);
+                                                ETHEN (ruleseq chX_L1) (ruleseq chID) ]
+);;
+           
+
+(* 
+Using TIMES_COMM we want to be able to manipulate terms in a sequent.
+This can be accomplished by a more general lemma with a variable context G. 
+Once again we start with the construction proof to obtain valid lambda terms. 
+*)
+
+g `?a:(A)Lambda b. G |== a :: (X % Y) ===> G |== b :: (Y % X)` ;;
+e (REPEAT META_EXISTS_TAC);;
+e (MDISCH_TAC);;
+eseq (drule_seqtac [`c`,`Y % X`;`D`,chEmpty `:A`] chCut);; (* cut! *)
+eseq (ruleseq TIMES_COMM);; (* Using the lemma we proved earlier *)
+eseq (seqassumption);;
+top_thm();;
+top_constr "a";; (* Gives: a *)
+top_constr "b";; (* Gives: Prod (Snd a,Fst a) *)
+
+(*
+And now we package the proof and our lemma is ready to use. 
+*)
+let chTimesCommR = prove_seq (`G |== a:(A)Lambda :: (X % Y) ===> G |== Prod (Snd a,Fst a) :: (Y % X)`,
+				ETHENL ( ETHEN
+				  (ETAC (MDISCH_TAC))
+				  (drule_seqtac [`c`,`Y % X`;`D`,chEmpty `:A`] chCut) ) [
+				  ruleseq TIMES_COMM;
+				  seqassumption]);;
+
+(*
+We prove a similar lemma that allows us to manipulate terms on the left hand side of the sequent.
+*)
+g `?a:(A)Lambda b. G ^ ' (a :: (X % Y)) |== z :: C  ===> G ^ ' (b :: (Y % X)) |== z :: C` ;;
+e (REPEAT META_EXISTS_TAC);;
+e (MDISCH_TAC);;
+eseq (rule_seqtac [`a`,`X % Y`;`G`,`' (b :: (Y % X))`] chCut);;
+eseq (ruleseq TIMES_COMM);;
+eseq (seqassumption);;
+top_thm();;
+top_constr "a";;
+top_constr "b";;
+
+let chTimesCommL = prove_seq (`G ^ ' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C  ===> G ^ ' (a :: (Y % X)) |== z :: C`,
+				ETHENL ( ETHEN
+				  (ETAC (MDISCH_TAC))
+				  (rule_seqtac [`a`,`X % Y`;`G`,`' (a :: (Y % X))`] chCut) ) [
+				  ruleseq TIMES_COMM;
+				  seqassumption]);;
+
+
+(* 
+Here is an example of how we can use these lemmas to manipulate terms in a proof.
+*)
+
+g `? P. mempty |== P :: (((A % B) % C) --> (C % (B % A)))` ;;
+e (REPEAT META_EXISTS_TAC);;
+eseq (ruleseq chI_R);;
+eseq (ruleseq chTimesCommR);;
+eseq (ruleseq chC);;
+eseq (ruleseq chX_R);;
+
+eseq (ruleseq chX_L1);;
+eseq (ruleseq chTimesCommL);;
+eseq (ruleseq chID);;
+
+eseq (ruleseq chX_L2);;
+eseq (ruleseq chID);;
+
+top_thm();;
+top_constr "P";; 
+(* Gives: 
+`Lam x0
+   (Prod
+   (Snd (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))),
+    Fst (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0)))))`
+*)
+
+(*
+Some more proofs.
+
+We can use this type of proof to construct more complex programs.
+We put function and variable definitions (such as `a` here) in the context and 
+give a type specification (such as `X --> Y --> Z` here) in the conclusion.
+The proof will generate the program `b` for us.
+*)
+
+g `?b:(A)Lambda . ' (a :: (X % Y --> Z)) |== b :: (X --> Y --> Z)` ;;
+e (REPEAT META_EXISTS_TAC);;
+eseq (ruleseq chI_R);;
+eseq (ruleseq chI_R);;
+eseq (rule_seqtac [`G`, chEmpty `:A`] chI_L);;
+
+eseq (ruleseq chID);;
+
+eseq (ruleseq chX_R);;
+eseq (ruleseq chID);;
+eseq (ruleseq chID);;
+
+top_thm();;
+top_constr "b";; (* Gives: Lam x0 (Lam x1 (a @@ Prod (Var x0,Var x1))) *)
+
+
+g `?b. ' (a :: (X--> Y-->Z)) |== b :: (X % Y --> Z)` ;;
+e (REPEAT META_EXISTS_TAC);;
+eseq (ruleseq chI_R);;
+eseq (rule_seqtac [`a`,`X % Y`] chC);;
+eseq (ruleseq chI_L);;
+eseq (ruleseq chI_L);;
+
+eseq (ruleseq chID);;
+
+eseq (ruleseq chX_L2);;
+eseq (ruleseq chID);;
+
+eseq (ruleseq chX_L1);;
+eseq (ruleseq chID);;
+
+top_thm();;
+top_constr "b";; (* Gives: Lam x0 ((a @@ Fst (Var x0)) @@ Snd (Var x0)) *)
+
