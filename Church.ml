@@ -27,7 +27,7 @@
 (* ========================================================================= *)
 
 (* Dependencies *)
-loads ("tools/embed.ml");;
+loads ("embed/sequent.ml");;
 
 (* Type declaration *)
 
@@ -124,10 +124,35 @@ let lamSnd = prove (`!x y. Snd (Prod (x,y)) = y`, REWRITE_TAC[lamSnd_DEF;SND]);;
 
 
 
+(* Annotating terms with types. *)
+
 let tmINDUCT,tmRECURSION = define_type "TTerm = Annotate A Prop";;
 
 parse_as_infix("::",(16,"right"));;
 override_interface("::",`Annotate`);;
+
+
+(* Printer to hide terms from proofs. *)
+
+let chTermString tm =
+  try 
+    let c,args = strip_comb tm in
+    let op = (fst o dest_const) c in
+    if (String.equal op "Annotate") 
+    then (string_of_term o hd o tl) args 
+    else failwith ""
+  with Failure _ -> failwith "Not a Curry-Howard term."
+
+let print_chTerm fmt = pp_print_string fmt o chTermString
+
+let hide_lam,show_lam =
+  (fun () -> install_user_printer ("print_chTerm",print_chTerm)),
+  (fun () -> try delete_user_printer "print_chTerm"
+             with Failure _ -> failwith ("show_procs: " ^
+                                           "Curry-Howard lambda terms are already being shown normally."));;
+    
+hide_lam();;
+
 
 
 (* Consequence operator *)
@@ -170,6 +195,10 @@ eseq (ruleseq chID);;
 
 top_thm();;
 instantiate (top_inst(p())) `P:(num)Lambda` ;;
+let xp = it;;
+
+
+
 (*
 
 
