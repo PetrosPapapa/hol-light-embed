@@ -80,8 +80,8 @@ let propRULES,propINDUCT,propCASES = new_inductive_definition
 
 let [pID;
      pW; pC; pCut; 
-     pXR; pXL1; pXL2;
-     pIL; pIR
+     pX_R; pX_L1; pX_L2;
+     pI_L; pI_R
    ] = 
   map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
     (CONJUNCTS propRULES);;
@@ -89,12 +89,12 @@ let [pID;
 
 
 g `mempty |= X % Y --> Y % X` ;;
-eseq (ruleseq pIR);;
+eseq (ruleseq pI_R);;
 eseq (ruleseq pC);;
-eseq (ruleseq pXR);;
-eseq (ruleseq pXL2);;
+eseq (ruleseq pX_R);;
+eseq (ruleseq pX_L2);;
 eseq (ruleseq pID);;
-eseq (ruleseq pXL1);;
+eseq (ruleseq pX_L1);;
 eseq (ruleseq pID);;
 
 top_thm();;
@@ -176,27 +176,51 @@ let chRULES,chINDUCT,chCASES = new_inductive_definition
 
 let [chID;
      chW; chC; chCut; 
-     chXR; chXL1; chXL2;
-     chIL; chIR
+     chX_R; chX_L1; chX_L2;
+     chI_L; chI_R
    ] = 
   map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
     (CONJUNCTS chRULES);;
 ;;
 
+
+(* Extract lambda term in a construction proof. *)
+
+let lamConstruct p st = 
+  let construct m =
+    if (String.equal p ((fst o dest_var) m)) 
+    then instantiate (top_inst st) m
+    else failwith "Not found!" in
+  tryfind construct (top_metas st);;
+
+let top_constr s = lamConstruct s (p());;
+
+
 g `?P:(num)Lambda. mempty |== P :: (X % Y --> Y % X)` ;;
 e (META_EXISTS_TAC);;
-eseq (ruleseq chIR);;
+eseq (ruleseq chI_R);;
 eseq (ruleseq chC);;
-eseq (ruleseq chXR);;
-eseq (ruleseq chXL2);;
+eseq (ruleseq chX_R);;
+eseq (ruleseq chX_L2);;
 eseq (ruleseq chID);;
-eseq (ruleseq chXL1);;
+eseq (ruleseq chX_L1);;
 eseq (ruleseq chID);;
 
 top_thm();;
-instantiate (top_inst(p())) `P:(num)Lambda` ;;
-let xp = it;;
+top_constr "P";;
 
+g `mempty |== Lam x (Prod (Snd (Var x),Fst (Var x))) :: (X % Y --> Y % X)` ;;
+eseq (ruleseq chI_R);;
+eseq (ruleseq chC);;
+eseq (ruleseq chX_R);;
+eseq (ruleseq chX_L2);;
+eseq (ruleseq chID);;
+eseq (ruleseq chX_L1);;
+eseq (ruleseq chID);;
+
+
+top_thm();;
+let xp = it;;
 
 
 (*
