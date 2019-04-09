@@ -1,19 +1,14 @@
 (* ========================================================================= *)
-(* Deep embedding of Intuitionistic Linear Logic                             *)
+(* Shallow embedding of a subset of propositional logic and the Curry-Howard *)
+(* isomoprhism.                                                              *)
 (*                                                                           *)
 (* Petros Papapanagiotou                                                     *)
 (* Center of Intelligent Systems and their Applications                      *)
 (* University of Edinburgh                                                   *)
 (* 2019                                                                      *)
 (* ------------------------------------------------------------------------- *)
-(* This includes the rules of a subset of the simply-typed lambda calculus 
-   of Church, as presented in Section 7 of the following paper:
-
-   Wadler, P 2015, 'Propositions as Types' 
-   Communications of the ACM, vol 58, no. 12, pp. 75-84. 
-   DOI: 10.1145/2699407
-   https://dl.acm.org/citation.cfm?doid=2847579.2699407
-   http://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-types/propositions-as-types.pdf
+(* This includes the rules of a subset of propositional logic and its 
+   a formulation of the Curry-Howard isomorphism for that subset.
 
    The subset only includes conjunction/products and implication/funtions for
    demonstration purposes.
@@ -102,7 +97,7 @@ top_thm();;
 
 
 (* ------------------------------------------------------------------------- *)
-(* Curry-Howard correspondence by Church                                     *)
+(* Curry-Howard correspondence                                               *)
 (* ------------------------------------------------------------------------- *)
 
 (* Lambda terms *)
