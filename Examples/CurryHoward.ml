@@ -18,7 +18,7 @@
    Cambridge: Cambridge university press.
 
    We embed the logic alone (|=) as well as its correspondence (|==).
-                                                                             *)
+ *)
 (* ========================================================================= *)
 
 (* Dependencies *)
@@ -27,9 +27,9 @@ loads ("embed/sequent.ml");;
 (* Type declaration *)
 
 let prop_INDUCT,prop_RECURSION = define_type
-    "Prop = Truth
-     | Product Prop Prop
-     | Implies Prop Prop";;
+                                   "Prop = Truth
+                                    | Product Prop Prop
+                                    | Implies Prop Prop";;
 
 (* Pretty printing abbreviations *)
 
@@ -43,19 +43,19 @@ parse_as_infix("|=",(11,"right"));;
 
 (* Consequence rules *)
 let propRULES,propINDUCT,propCASES = new_inductive_definition 
-`(!a. ' a |= a) /\
+                                       `(!a. ' a |= a) /\
 
- (!G a c. (G |= c) ==> (G ^ ' a |= c)) /\
- (!G a c. (G ^ ' a ^ ' a |= c) ==> (G ^ ' a |= c)) /\
- (!G D a c. (G |= a) /\ (D ^ ' a |= c) ==> (G ^ D |= c)) /\
+(!G a c. (G |= c) ==> (G ^ ' a |= c)) /\
+(!G a c. (G ^ ' a ^ ' a |= c) ==> (G ^ ' a |= c)) /\
+(!G D a c. (G |= a) /\ (D ^ ' a |= c) ==> (G ^ D |= c)) /\
 
 
- (!G D a b. (G |= a) /\ (D |= b) ==> (G ^ D |= a % b)) /\
- (!G a b c. (G ^ ' a |= c) ==> (G ^ ' (a % b) |= c)) /\
- (!G a b c. (G ^ ' b |= c) ==> (G ^ ' (a % b) |= c)) /\
+(!G D a b. (G |= a) /\ (D |= b) ==> (G ^ D |= a % b)) /\
+(!G a b c. (G ^ ' a |= c) ==> (G ^ ' (a % b) |= c)) /\
+(!G a b c. (G ^ ' b |= c) ==> (G ^ ' (a % b) |= c)) /\
 
- (!G D a b c. (G ^ ' b |= c) /\ (D |= a) ==> (G ^ D ^ ' (a --> b) |= c)) /\
- (!G a b. (G ^ ' a |= b) ==> (G |= (a --> b)))
+(!G D a b c. (G ^ ' b |= c) /\ (D |= a) ==> (G ^ D ^ ' (a --> b) |= c)) /\
+(!G a b. (G ^ ' a |= b) ==> (G |= (a --> b)))
 ` ;;
 
 
@@ -68,8 +68,7 @@ let propRULES,propINDUCT,propCASES = new_inductive_definition
  (!G a b. (G ^ ' (a --> b) ^ ' a) |= b) /\
  (!G a b. ((G ^ ' a) |= b) ==> (G |= (a --> b))) 
 ` ;;
-*)
-
+ *)
 
 (* Split the rules to be used as meta-rules! *)
 
@@ -77,10 +76,41 @@ let [pID;
      pW; pC; pCut; 
      pX_R; pX_L1; pX_L2;
      pI_L; pI_R
-   ] = 
+    ] = 
   map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
     (CONJUNCTS propRULES);;
-  
+
+
+(* Normal HOL Light versions of the proofs *)
+
+let [pID';
+     pW'; pC'; pCut'; 
+     pX_R'; pX_L1'; pX_L2';
+     pI_L'; pI_R'
+    ] = (CONJUNCTS propRULES);;
+
+(* Example interactive proof using HOL Light. *)
+(* A lot of work with empty contexts even for such as simple example.
+Also all the terms happen to be in the right order and match
+perfectly. *)
+
+g `mempty |= X % Y --> Y % X` ;;
+e (MATCH_MP_TAC pI_R');;
+e (MATCH_MP_TAC pC');;
+e (REWRITE_TAC[MUNION_EMPTY2]);;
+e (MATCH_MP_TAC pX_R');;
+e (CONJ_TAC);;
+e (SUBGOAL_THEN (`mempty ^ '(X % Y) |= Y`)
+     (fun th -> ACCEPT_TAC (REWRITE_RULE[MUNION_EMPTY2] th)));;
+e (MATCH_MP_TAC pX_L2');;
+e (REWRITE_TAC[MUNION_EMPTY2]);;
+e (MATCH_ACCEPT_TAC pID);;
+e (SUBGOAL_THEN (`mempty ^ '(X % Y) |= X`)
+     (fun th -> ACCEPT_TAC (REWRITE_RULE[MUNION_EMPTY2] th)));;
+e (MATCH_MP_TAC pX_L1');;
+e (REWRITE_TAC[MUNION_EMPTY2]);;
+e (MATCH_ACCEPT_TAC pID);;
+top_thm();;
 
 
 g `mempty |= X % Y --> Y % X` ;;
@@ -91,9 +121,7 @@ eseq (ruleseq pX_L2);;
 eseq (ruleseq pID);;
 eseq (ruleseq pX_L1);;
 eseq (ruleseq pID);;
-
 top_thm();;
-
 
 
 (* ------------------------------------------------------------------------- *)
@@ -103,11 +131,11 @@ top_thm();;
 (* Lambda terms *)
 
 let lamINDUCT,lamRECURSION = define_type
-    " Lambda = Var A
-     | App Lambda Lambda
-     | Prod (Lambda#Lambda)
-     | Lam A Lambda
-";;
+                               " Lambda = Var A
+                                | App Lambda Lambda
+                                | Prod (Lambda#Lambda)
+                                | Lam A Lambda
+                                ";;
 
 (* Application syntax sugar  *)
 parse_as_infix("@@",(10,"right"));; 
@@ -117,13 +145,13 @@ override_interface("@@",`App`);;
 (* Projection functions for products *)
 
 let lamFst_DEF = new_recursive_definition lamRECURSION 
-                `Fst (Prod x :(A)Lambda) = FST x` ;; 
+                   `Fst (Prod x :(A)Lambda) = FST x` ;; 
 
 let lamFst = prove (`!x y. Fst (Prod (x,y)) = x`, REWRITE_TAC[lamFst_DEF;FST]);;
 
 
 let lamSnd_DEF = new_recursive_definition lamRECURSION 
-                `Snd (Prod x :(A)Lambda) = SND x` ;; 
+                   `Snd (Prod x :(A)Lambda) = SND x` ;; 
 
 let lamSnd = prove (`!x y. Snd (Prod (x,y)) = y`, REWRITE_TAC[lamSnd_DEF;SND]);;
 
@@ -155,7 +183,7 @@ let hide_lam,show_lam =
   (fun () -> try delete_user_printer "print_chTerm"
              with Failure _ -> failwith ("show_procs: " ^
                                            "Curry-Howard lambda terms are already being shown normally."));;
-    
+
 
 (* Hiding by default. Use "show_lam();;" to disable. *)
 hide_lam();;
@@ -166,26 +194,25 @@ hide_lam();;
 parse_as_infix("|==",(11,"right"));;
 
 let chRULES,chINDUCT,chCASES = new_inductive_definition 
-`(!a x. ' (x :: a) |== x :: a) /\
+                                 `(!a x. ' (x :: a) |== x :: a) /\
+(!G a c x z. (G |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
+(!G a c x z. (G ^ '(x :: a) ^ '(x :: a) |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
+(!G D a c x z. (G |== z :: a) /\ (D ^ ' (z :: a) |== x :: c) ==> (G ^ D |== x :: c)) /\
 
- (!G a c x z. (G |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
- (!G a c x z. (G ^ '(x :: a) ^ '(x :: a) |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
- (!G D a c x z. (G |== z :: a) /\ (D ^ ' (z :: a) |== x :: c) ==> (G ^ D |== x :: c)) /\
 
+(!G D a b x y. (G |== x :: a) /\ (D |== y :: b) ==> (G ^ D |== Prod (x,y) :: (a % b))) /\
+(!G a b c x z. (G ^ ' (Fst x :: a) |== (z :: c)) ==> (G ^ ' (x :: (a % b)) |== (z :: c))) /\
+(!G a b c x z. (G ^ ' (Snd x :: b) |== (z :: c)) ==> (G ^ ' (x :: (a % b)) |== (z :: c))) /\
 
- (!G D a b x y. (G |== x :: a) /\ (D |== y :: b) ==> (G ^ D |== Prod (x,y) :: (a % b))) /\
- (!G a b c x. (G ^ ' (Fst x :: a) |== c) ==> (G ^ ' (x :: (a % b)) |== c)) /\
- (!G a b c x. (G ^ ' (Snd x :: b) |== c) ==> (G ^ ' (x :: (a % b)) |== c)) /\
-
- (!G D a b c f y z. (G ^ ' ((f @@ y) :: b) |== z :: c) /\ (D |== (y :: a)) ==> (G ^ D ^ ' (f :: (a --> b)) |== z :: c)) /\
- (!G a b x y. (G ^ ' (Var x :: a) |== (y :: b)) ==> (G |== Lam x y :: (a --> b)))
+(!G D a b c f y z. (G ^ ' ((f @@ y) :: b) |== z :: c) /\ (D |== (y :: a)) ==> (G ^ D ^ ' (f :: (a --> b)) |== z :: c)) /\
+(!G a b x y. (G ^ ' (Var x :: a) |== (y :: b)) ==> (G |== Lam x y :: (a --> b)))
 ` ;;
 
 let [chID;
      chW; chC; chCut; 
      chX_R; chX_L1; chX_L2;
      chI_L; chI_R
-   ] = 
+    ] = 
   map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
     (CONJUNCTS chRULES);;
 ;;
@@ -245,11 +272,11 @@ top_thm();;
 (* 
 From the proof perspective, we are looking at commutativity of conjunction. 
 We want a lemma that we can use as a rule in future proofs.  
-*)
+ *)
 
 (* 
 First we need to construct the corresponding lambda terms to make a valid rule.
-*)
+ *)
 
 g `?a b. ' (a :: (X % Y)) |== b :: (Y % X)` ;;
 e (REPEAT META_EXISTS_TAC);;
@@ -267,26 +294,26 @@ top_constr "b";; (* Gives: Prod (Snd a,Fst a) *)
 These are not the only possible terms, but they are valid. 
 We did not use any cuts so we are fine.
 We need meta-theory (cut elimination) to formally prove they are minimal terms in general.
-*)
+ *)
 
 (*
 Now we can construct a reusable lemma by packaging the proof.
-*)
+ *)
 
-let TIMES_COMM = prove_seq( `' (a :: (X % Y)) |== Prod (Snd a, Fst a) :: (Y % X)`,
-                                            ETHENL 
-                                              (ETHEN (ruleseq chC) (ruleseq chX_R))
-                                              [
-                                                ETHEN (ruleseq chX_L2) (ruleseq chID);
-                                                ETHEN (ruleseq chX_L1) (ruleseq chID) ]
-);;
-           
+let TIMES_COMM = prove_seq( `' (a :: (X % Y)) |== Prod (Snd a, Fst a) :: (Y % X)` ,
+                            ETHENL 
+                              (ETHEN (ruleseq chC) (ruleseq chX_R))
+                              [
+                                ETHEN (ruleseq chX_L2) (ruleseq chID);
+                                ETHEN (ruleseq chX_L1) (ruleseq chID) ]
+                   );;
+
 
 (* 
 Using TIMES_COMM we want to be able to manipulate terms in a sequent.
 This can be accomplished by a more general lemma with a variable context G. 
 Once again we start with the construction proof to obtain valid lambda terms. 
-*)
+ *)
 
 g `?a:(A)Lambda b. G |== a :: (X % Y) ===> G |== b :: (Y % X)` ;;
 e (REPEAT META_EXISTS_TAC);;
@@ -300,17 +327,18 @@ top_constr "b";; (* Gives: Prod (Snd a,Fst a) *)
 
 (*
 And now we package the proof and our lemma is ready to use. 
-*)
-let chTimesCommR = prove_seq (`G |== a:(A)Lambda :: (X % Y) ===> G |== Prod (Snd a,Fst a) :: (Y % X)`,
-				ETHENL ( ETHEN
-				  (ETAC (MDISCH_TAC))
-				  (drule_seqtac [`c`,`Y % X`;`D`,chEmpty `:A`] chCut) ) [
-				  ruleseq TIMES_COMM;
-				  seqassumption]);;
+ *)
+let chTimesCommR = prove_seq (`G |== a:(A)Lambda :: (X % Y) ===>
+                                         G |== Prod (Snd a,Fst a) :: (Y % X)` ,
+				                       ETHENL ( ETHEN
+				                                  (ETAC (MDISCH_TAC))
+				                                  (drule_seqtac [`c`,`Y % X`;`D`,chEmpty `:A`] chCut) ) [
+				                           ruleseq TIMES_COMM;
+				                           seqassumption]);;
 
 (*
 We prove a similar lemma that allows us to manipulate terms on the left hand side of the sequent.
-*)
+ *)
 g `?a:(A)Lambda b. G ^ ' (a :: (X % Y)) |== z :: C  ===> G ^ ' (b :: (Y % X)) |== z :: C` ;;
 e (REPEAT META_EXISTS_TAC);;
 e (MDISCH_TAC);;
@@ -321,17 +349,18 @@ top_thm();;
 top_constr "a";;
 top_constr "b";;
 
-let chTimesCommL = prove_seq (`G ^ ' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C  ===> G ^ ' (a :: (Y % X)) |== z :: C`,
-				ETHENL ( ETHEN
-				  (ETAC (MDISCH_TAC))
-				  (rule_seqtac [`a`,`X % Y`;`G`,`' (a :: (Y % X))`] chCut) ) [
-				  ruleseq TIMES_COMM;
-				  seqassumption]);;
+let chTimesCommL = prove_seq (`G ^ ' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C  ===>
+                                G ^ ' (a :: (Y % X)) |== z :: C` ,
+				              ETHENL ( ETHEN
+				                         (ETAC (MDISCH_TAC))
+				                         (rule_seqtac [`a`,`X % Y`;`G`,`' (a :: (Y % X))`] chCut) ) [
+				                  ruleseq TIMES_COMM;
+				                  seqassumption]);;
 
 
 (* 
 Here is an example of how we can use these lemmas to manipulate terms in a proof.
-*)
+ *)
 
 g `? P. mempty |== P :: (((A % B) % C) --> (C % (B % A)))` ;;
 e (REPEAT META_EXISTS_TAC);;
@@ -354,7 +383,7 @@ top_constr "P";;
    (Prod
    (Snd (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))),
     Fst (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0)))))`
-*)
+ *)
 
 (*
 Some more proofs.
@@ -363,7 +392,7 @@ We can use this type of proof to construct more complex programs.
 We put function and variable definitions (such as `a` here) in the context and 
 give a type specification (such as `X --> Y --> Z` here) in the conclusion.
 The proof will generate the program `b` for us.
-*)
+ *)
 
 g `?b:(A)Lambda . ' (a :: (X % Y --> Z)) |== b :: (X --> Y --> Z)` ;;
 e (REPEAT META_EXISTS_TAC);;
