@@ -1,0 +1,1011 @@
+# -*- org-confirm-babel-evaluate: nil; -*-
+#+TITLE: Embedding Example: Curry-Howard
+#+AUTHOR: Petros Papapanagiotou
+#+PROPERTY: header-args :results verbatim :session *OCaml* :exports both :eval no-export :tangle yes
+
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/setup/theme-readtheorg.setup
+#+HTML_HEAD_EXTRA: <style type="text/css"> pre.src {background-color: #3E3D31; color: #F8F8F0;}</style>
+#+OPTIONS: toc:4
+
+* Introduction
+** Loading the library
+
+ The library can be loaded with a simple command:
+ #+begin_src ocaml :results silent 
+ loads ("embed/sequent.ml");;
+ #+end_src
+
+ This includes a small theory of multisets.
+
+** Multiset notation
+
+In an attempt to declutter multiset expressions, we adopt the following HOL Light notation:
+- ~mempty~ : empty multiset
+- Single quote ~'~: singleton multiset - e.g. ~' 5~ is ~{5}~.
+- Hat ~^~: multiset sum (munion) - e.g. ~' 5 ^ ' 5 ^ ' 6~ is ~{5,5,6}~.
+
+* A Simple Logic
+
+We embed a simple propositional logic, limited to conjunction and implication. 
+
+We will then try to prove a simple object-level theorem using vanilla HOL Light and our library.
+
+** Embedding
+*** Type Declaration
+    We define propositional terms as a recursive type ~Prop~:
+
+    #+begin_src ocaml :results silent :cache yes 
+let prop_INDUCT,prop_RECURSION = define_type
+                                   "Prop = Truth
+                                    | Product Prop Prop
+                                    | Implies Prop Prop";;    
+    #+end_src
+
+    We also add some syntax sugar. Namely, we set ~-->~ as the infix operator for implication (~Implies~) and ~%~ as the infix operator for conjunction (~Product~):
+
+#+begin_src ocaml :results silent
+parse_as_infix("-->",(13,"right"));;
+override_interface("-->",`Implies`);;
+parse_as_infix("%",(14,"right"));;
+override_interface("%",`Product`);;
+#+end_src
+
+*** Inference rules
+    First we introduce an infix operator for logical consequence, i.e. the "/turnstile/". 
+
+#+begin_src ocaml :results silent
+parse_as_infix("|=",(11,"right"));;
+#+end_src
+
+We then provide an inductive definition for the operator based on the inference rules. Each line (conjunct) in the definition corresponds to one inference rule, in the following order:
+1) Identity (~ID~)
+2) Weakening (~W~)
+3) Contraction (~C~)
+4) Cut (~Cut~)
+5) Conjunction Right (~RX~)
+6) Conjunction Left1 (~L1X~)
+7) Conjunction Left2 (~L2X~)
+8) Implication Left (~L-->~)
+9) Implication Right (~R-->~)
+
+#+begin_src ocaml -n 0 :results silent :cache yes 
+let propRULES,propINDUCT,propCASES = new_inductive_definition 
+`(!a. ' a |= a) /\
+(!G a c. (G |= c) ==> (G ^ ' a |= c)) /\
+(!G a c. (G ^ ' a ^ ' a |= c) ==> (G ^ ' a |= c)) /\
+(!G D a c. (G |= a) /\ (D ^ ' a |= c) ==> (G ^ D |= c)) /\
+(!G D a b. (G |= a) /\ (D |= b) ==> (G ^ D |= a % b)) /\
+(!G a b c. (G ^ ' a |= c) ==> (G ^ ' (a % b) |= c)) /\
+(!G a b c. (G ^ ' b |= c) ==> (G ^ ' (a % b) |= c)) /\
+(!G D a b c. (G ^ ' b |= c) /\ (D |= a) ==> (G ^ D ^ ' (a --> b) |= c)) /\
+(!G a b. (G ^ ' a |= b) ==> (G |= (a --> b)))
+` ;;
+#+end_src
+
+We now break up the definition into the individual rules. We also do some pre-processing to get them ready to be used as (embedded) "meta-rules". We keep unprocessed, primed versions of the rules as well, to demonstrate how a proof would work out using vanilla HOL Light.
+
+#+begin_src ocaml :results silent
+let [pID;
+     pW; pC; pCut; 
+     pX_R; pX_L1; pX_L2;
+     pI_L; pI_R
+    ] = 
+  map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
+    (CONJUNCTS propRULES);;
+
+let [pID';
+     pW'; pC'; pCut'; 
+     pX_R'; pX_L1'; pX_L2';
+     pI_L'; pI_R'
+    ] = (CONJUNCTS propRULES);;
+#+end_src
+
+** Proofs
+
+*** Vanilla HOL Light
+
+Set the goal:
+#+begin_src ocaml
+g `mempty |= X % Y --> Y % X` ;;
+#+end_src
+
+#+RESULTS[5e65f2ab0598e98ba7fb0c4af0bcd2a5d148df00]:
+: Warning: Free variables in goal: X, Y
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `mempty |= X % Y --> Y % X`
+
+Apply ~R-->~:
+#+begin_src ocaml
+e (MATCH_MP_TAC pI_R');;
+#+end_src
+
+#+RESULTS[5f5e63308fce0ac375b672ed9684ddab490de5fc]:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `mempty^' (X % Y) |= Y % X`
+
+Now we want to apply contraction:
+
+#+begin_src ocaml
+pC';;
+#+end_src
+
+#+RESULTS[eb8ec6bfe3245399eccf22f3ba0adcfba5e49fb8]:
+: val it : thm = |- !G a c. G^' a^' a |= c ==> G^' a |= c
+
+We are lucky that, thanks to the empty multiset, the rule matches directly so that:
+- ~G~ = ~mempty~
+- ~a~ = ~X % Y~
+- ~c~ = ~Y % X~
+
+#+begin_src ocaml
+e (MATCH_MP_TAC pC');;
+#+end_src
+
+#+RESULTS[206b50ee1f9cc5e475bc136a48d1c45dd7a8d0b6]:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `mempty^' (X % Y)^' (X % Y) |= Y % X`
+
+Now we want to apply ~RX~:
+
+#+begin_src ocaml
+pX_R';;
+#+end_src
+
+#+RESULTS[e564dcc833a29e6a8ca09d3536dc4463e9e02504]:
+: val it : thm = |- !G D a b. G |= a /\ D |= b ==> G^D |= a % b
+
+This time we are not as lucky. We want the left-hand side of the turnstile in the goal to match the form ~G^D~. If we apply the rule directly we will get the following match:
+- ~G~ = ~mempty~
+- ~D~ = ~' (X % Y)^' (X % Y)~
+
+The result is not what we want:
+#+begin_src ocaml
+e (MATCH_MP_TAC pX_R');;
+#+end_src
+
+#+RESULTS[462832403557de071ad2a92be6c3397b7f6ebb57]:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `mempty |= Y /\ ' (X % Y)^' (X % Y) |= X`
+
+So we backtrack. We can use the ~MUNION_EMPTY2~ to get rid of the empty multiset:
+#+begin_src ocaml 
+b();;
+MUNION_EMPTY2;;
+#+end_src
+
+#+RESULTS:
+: val it : thm = |- (mempty^M) = M
+
+So we use rewritting:
+
+#+begin_src ocaml
+e (REWRITE_TAC[MUNION_EMPTY2]);;
+#+end_src
+
+#+RESULTS[999468af3cc8df8d636947f9608bf9fceed91c49]:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `' (X % Y)^' (X % Y) |= Y % X`
+
+Now the rule will give us what we wanted:
+
+#+begin_src ocaml
+e (MATCH_MP_TAC pX_R');;
+#+end_src
+
+#+RESULTS[462832403557de071ad2a92be6c3397b7f6ebb57]:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `' (X % Y) |= Y /\ ' (X % Y) |= X`
+
+We use ~CONJ_TAC~ to break our conjunction to 2 subgoals:
+#+begin_src ocaml
+e (CONJ_TAC);;
+#+end_src
+
+#+RESULTS[3a7de111f9206aed836b7b190e69a037e43257b7]:
+: val it : goalstack = 2 subgoals (2 total)
+: 
+: `' (X % Y) |= X`
+: 
+: `' (X % Y) |= Y`
+
+Now we want to use the ~L2X~ rule:
+#+begin_src ocaml
+pX_L2';;
+#+end_src
+
+#+RESULTS:
+: val it : thm = |- !G a b c. G^' b |= c ==> G^' (a % b) |= c
+
+...but we can't, because we have nothing to match to ~G~:
+
+#+begin_src ocaml
+e (MATCH_MP_TAC pX_L2');;
+#+end_src
+
+#+RESULTS:
+: Exception: Failure "MATCH_MP_TAC: No match".
+
+We need to add an empty multiset, so that ~G = mempty~. One way to do this is by introducing the exact form that we want as a subgoal. We use rewritting with ~MUNION_EMPTY2~ to prove that the new subgoal is equivalent to the original:
+
+
+#+begin_src ocaml
+e (SUBGOAL_THEN (`mempty ^ '(X % Y) |= Y`)
+     (fun th -> ACCEPT_TAC (REWRITE_RULE[MUNION_EMPTY2] th)));;
+#+end_src
+
+#+RESULTS[ccd3c04cd1f5c34eadd800ed59d9901114a9ad22]:
+: val it : goalstack = 1 subgoal (2 total)
+: 
+: `mempty^' (X % Y) |= Y`
+
+Now we can use the rule:
+
+#+begin_src ocaml
+e (MATCH_MP_TAC pX_L2');;
+#+end_src
+
+#+RESULTS[7b85addfd103daf8967c6d7642e2e4069f2b88a0]:
+: val it : goalstack = 1 subgoal (2 total)
+: 
+: `mempty^' Y |= Y`
+
+Getting rid of the empty multiset again, as ~ID~ will not like it:
+
+#+begin_src ocaml
+e (REWRITE_TAC[MUNION_EMPTY2]);;
+#+end_src
+
+#+RESULTS[999468af3cc8df8d636947f9608bf9fceed91c49]:
+: val it : goalstack = 1 subgoal (2 total)
+: 
+: `' Y |= Y`
+
+The identity rule completes this branch of the proof:
+
+#+begin_src ocaml
+e (MATCH_ACCEPT_TAC pID);;
+#+end_src
+
+#+RESULTS[1b4ba3e9ef27ec164f7d82cfc94e808d9cb0e0d2]:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `' (X % Y) |= X`
+
+The second branch is symmetrical:
+
+#+begin_src ocaml
+e (SUBGOAL_THEN (`mempty ^ '(X % Y) |= X`)
+     (fun th -> ACCEPT_TAC (REWRITE_RULE[MUNION_EMPTY2] th)));;
+e (MATCH_MP_TAC pX_L1' THEN REWRITE_TAC[MUNION_EMPTY2] THEN MATCH_ACCEPT_TAC pID);;
+#+end_src
+
+#+RESULTS[0f0ce854eeaf344229f686381fa54fc2e7f5b910]:
+: val it : goalstack = No subgoals
+
+Our proof is complete, so we can reconstruct the theorem we just proved. This also validates the whole proof:
+
+#+begin_src ocaml
+top_thm();;
+#+end_src
+
+#+RESULTS[568cab6783398e57cf606b526d3333026b350b8a]:
+: val it : thm = |- mempty |= X % Y --> Y % X
+
+*** Using our library
+
+We reset the goal to the initial state. This time we will use our library:
+#+begin_src ocaml
+g `mempty |= X % Y --> Y % X` ;;
+#+end_src
+
+#+RESULTS:
+: Warning: Free variables in goal: X, Y
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `mempty |= X % Y --> Y % X`
+
+The sequence of the rules is exactly the same, starting with ~R-->~. 
+
+The ~eseq~ command is an extension of ~e~ for our extended (embedded *seq*uent calculus) tactics. 
+
+The ~ruleseq~ tactic uses any embedded sequent calculus rule in a backwards reasoning step (as ~MATCH_MP_TAC~ does):
+
+#+begin_src ocaml
+eseq (ruleseq pI_R);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `' (X % Y) |= Y % X`
+
+No empty multisets appear this time. Now we can use ~C~ directly:
+
+#+begin_src ocaml
+eseq (ruleseq pC);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `' (X % Y)^' (X % Y) |= Y % X`
+
+Again, no empty multiset to clutter our goal. We can use ~RX~ and it will match directly:
+
+#+begin_src ocaml
+eseq (ruleseq pX_R);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 2 subgoals (2 total)
+: 
+: `' (X % Y) |= X`
+: 
+: `' (X % Y) |= Y`
+
+Notice that the subgoals were also split automatically without explicit ~CONJ_TAC~.
+
+Even though we are in the same state as before, without an empty multiset to match ~G~, we can apply ~L2X~ with no problems:
+
+#+begin_src ocaml
+eseq (ruleseq pX_L2);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (2 total)
+: 
+: `' Y |= Y`
+
+And finish it off with ~ID~:
+#+begin_src ocaml
+eseq (ruleseq pID);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `' (X % Y) |= X`
+
+Symmetrically for the second branch:
+#+begin_src ocaml
+eseq (ruleseq pX_L1);;
+eseq (ruleseq pID);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = No subgoals
+
+The proof validates fine, and we get the same theorem:
+
+#+begin_src ocaml
+top_thm();;
+#+end_src
+
+#+RESULTS:
+: val it : thm = |- mempty |= X % Y --> Y % X
+
+
+*** Explicit Instantiation 
+
+Now, let's revisit this goal:
+#+begin_src ocaml
+g `' (X % Y)^' (X % Y) |= Y % X` ;;
+#+end_src
+
+#+RESULTS:
+: Warning: Free variables in goal: X, Y
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `' (X % Y)^' (X % Y) |= Y % X`
+
+In vanilla HOL Light we had an extra ~mempty~ lying around, so applying ~RX~ gave us the match ~G = mempty~. Using our library there is no empty multiset to match to ~G~. 
+
+The question is, what if we /actually wanted/ ~G~ to be matched to an empty multiset and all of the rest of the context to go into ~D~? 
+
+We can still do this by explicitly instantiating our rule, using ~rule_seqtac~:
+#+begin_src ocaml
+eseq (rule_seqtac [`D`,`' (X % Y)^' (X % Y)`] pX_R) ;;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: val it : goalstack = 2 subgoals (2 total)
+: 
+: `' (X % Y)^' (X % Y) |= X`
+: 
+: `mempty |= Y`
+
+Note that we have provided no typing information for ~D~, ~X~, or ~Y~, yet the system did not complain. It figured out and instantiated the types on its own. 
+
+We could also instantiate ~G~ to ~mempty~. However, we do need to provide the type of ~mempty~ in that case, because it cannot be found in the goal and we can therefore not determine its type automatically:
+
+#+begin_src ocaml
+b();;
+eseq (rule_seqtac [`G`,`mempty:(Prop)multiset`] pX_R) ;;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: Warning: inventing type variables
+: val it : goalstack = 2 subgoals (2 total)
+: 
+: `' (X % Y)^' (X % Y) |= X`
+: 
+: `mempty |= Y`
+
+Even though there was no ~mempty~ in the original goal, the system managed to apply the rule as we wanted.
+
+* Curry-Howard
+** Embedding
+*** Lambda Terms
+   We begin by defining the lambda terms as a recursive type ~Lambda~:
+
+    #+begin_src ocaml :results silent :cache yes 
+let lamINDUCT,lamRECURSION = define_type
+                               " Lambda = Var A
+                                | App Lambda Lambda
+                                | Prod (Lambda#Lambda)
+                                | Lam A Lambda
+                                ";; 
+    #+end_src
+
+Our type is polymorphic to the type of the variable names. Typically this will be a ~string~, but it alternative types may be used to facilitate substitutions, freshness conditions, etc.
+
+    We add ~@@~ as an infix operator for function application (~App~):
+
+#+begin_src ocaml :results silent
+parse_as_infix("@@",(10,"right"));; 
+override_interface("@@",`App`);;
+#+end_src
+
+Normally projections would be primitively defined as part of the syntax. Cut elimination then yields their functionality. We are only working on shallow embeddings and object-level reasoning. We cannot perform cut elimination at this level. Because of this, we define projections as functions, so that they are more practical.
+
+The definitions rely on ~FST~ and ~SND~ which are functions over pairs in HOL Light. Constant and function names in HOL Light are case sensitive, so we can use ~Fst~ and ~Snd~:
+
+#+begin_src ocaml :results silent :cache yes
+let lamFst_DEF = new_recursive_definition lamRECURSION 
+                   `Fst (Prod x :(A)Lambda) = FST x` ;; 
+
+let lamFst = prove (`!x y. Fst (Prod (x,y)) = x`, REWRITE_TAC[lamFst_DEF;FST]);;
+
+
+let lamSnd_DEF = new_recursive_definition lamRECURSION 
+                   `Snd (Prod x :(A)Lambda) = SND x` ;; 
+
+let lamSnd = prove (`!x y. Snd (Prod (x,y)) = y`, REWRITE_TAC[lamSnd_DEF;SND]);;
+#+end_src
+
+*** Type Annotations
+
+    We want to be able to annotate lambda terms with propositions as types. We actually make this a little more general than that, so we can annotate /any/ term with types:
+    #+begin_src ocaml :results silent :cache yes 
+    let tmINDUCT,tmRECURSION = define_type "TTerm = Annotate A Prop";; 
+    #+end_src
+
+Using a variable type ~A~ makes the defined ~TTerm~ polymorphic. For lambdas, the type will be ~((A)Lambda)TTerm~ for some ~A~ (the type of variable names).
+
+
+    We add ~::~ as an infix typing operator (we cannot use ~:~ because it is the HOL Light typing operator):
+
+#+begin_src ocaml :results silent
+parse_as_infix("::",(16,"right"));;
+override_interface("::",`Annotate`);;
+#+end_src
+
+In HOL Light, it is fairly easy to install a custom printer that hides the lambda terms from our proofs. This makes it easier to focus on the logical proof without worrying about the computational terms:
+
+#+begin_src ocaml :results silent :cache yes
+let chTermString tm =
+  try 
+    let c,args = strip_comb tm in
+    let op = (fst o dest_const) c in
+    if (String.equal op "Annotate") 
+    then (string_of_term o hd o tl) args 
+    else failwith ""
+  with Failure _ -> failwith "Not a Curry-Howard term." ;;
+
+let print_chTerm fmt = pp_print_string fmt o chTermString ;;
+
+let hide_lam,show_lam =
+  (fun () -> install_user_printer ("print_chTerm",print_chTerm)),
+  (fun () -> try delete_user_printer "print_chTerm"
+             with Failure _ -> failwith ("show_procs: " ^
+                                           "Curry-Howard lambda terms are already being shown normally."));;
+
+hide_lam();;
+#+end_src
+
+We can hide lambda terms using ~hide_lam()~ or re-enable them using ~show_lam()~.
+
+*** Inference Rules 
+  As before, we introduce an infix operator for logical consequence, i.e. the "/turnstile/". We use a different symbol so that both embedding can co-exist:
+
+ #+begin_src ocaml :results silent
+ parse_as_infix("|==",(11,"right"));
+ #+end_src
+
+ We introduce the inference rules in the same way and order as before:
+ 1) Identity (~ID~)
+ 2) Weakening (~W~)
+ 3) Contraction (~C~)
+ 4) Cut (~Cut~)
+ 5) Conjunction Right (~RX~)
+ 6) Conjunction Left1 (~L1X~)
+ 7) Conjunction Left2 (~L2X~)
+ 8) Implication Left (~L-->~)
+ 9) Implication Right (~R-->~)
+
+ #+begin_src ocaml -n 0 :results silent :cache yes 
+let chRULES,chINDUCT,chCASES = new_inductive_definition 
+`(!a x. ' (x :: a) |== x :: a) /\
+(!G a c x z. (G |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
+(!G a c x z. (G ^ '(x :: a) ^ '(x :: a) |== z :: c) ==> (G ^ ' (x :: a) |== z :: c)) /\
+(!G D a c x z. (G |== z :: a) /\ (D ^ ' (z :: a) |== x :: c) ==> (G ^ D |== x :: c)) /\
+(!G D a b x y. (G |== x :: a) /\ (D |== y :: b) ==> (G ^ D |== Prod (x,y) :: (a % b))) /\
+(!G a b c x z. (G ^ ' (Fst x :: a) |== (z :: c)) ==> (G ^ ' (x :: (a % b)) |== (z :: c))) /\
+(!G a b c x z. (G ^ ' (Snd x :: b) |== (z :: c)) ==> (G ^ ' (x :: (a % b)) |== (z :: c))) /\
+(!G D a b c f y z. (G ^ ' ((f @@ y) :: b) |== z :: c) /\ (D |== (y :: a)) ==> (G ^ D ^ ' (f :: (a --> b)) |== z :: c)) /\
+(!G a b x y. (G ^ ' (Var x :: a) |== (y :: b)) ==> (G |== Lam x y :: (a --> b)))
+` ;;
+ #+end_src
+
+The only difference is that we use annotated terms (~TTerm~s) instead of propositions (~Prop~s), so we include the corresponding Curry-Howard terms in each rule.
+
+As before, we break up and pre-process our rules, ready for use in our system:
+
+ #+begin_src ocaml :results silent
+let [chID;
+     chW; chC; chCut; 
+     chX_R; chX_L1; chX_L2;
+     chI_L; chI_R
+    ] = 
+  map (MIMP_RULE o SPEC_ALL o REWRITE_RULE[IMP_CONJ]) 
+    (CONJUNCTS chRULES);;
+ #+end_src
+
+If we are doing construction proofs, it help to be able to instantiate variables of type ~Lambda~ easily using metavariables from the proof state. These shortcut methods greatly facilitate this:
+
+#+begin_src ocaml :results silent
+let lamConstruct p st = 
+  let construct m =
+    if (String.equal p ((fst o dest_var) m)) 
+    then instantiate (top_inst st) m
+    else failwith "Not found!" in
+  tryfind construct (top_metas st);;
+
+let top_constr s = lamConstruct s (p());;
+#+end_src
+
+Finally, we mentioned earlier how we sometimes need to provide a typed ~mempty~. Our types have started becoming quite verbose (and are still variable), so we write a quick function to make this easier:
+
+#+begin_src ocaml :results silent
+let chEmpty ty = inst [ty,`:A`] `mempty:(((A)Lambda)TTerm)multiset` ;;
+#+end_src
+
+Now we are ready to do some proofs!
+
+** Proofs
+
+*** A Construction Proof 
+
+We revisit the same proof from before. Now we want to find which lambda term matches this particular type. We use existential quantification at the meta-level (HOL):
+#+begin_src ocaml
+g `?P. mempty |== P :: (X % Y --> Y % X)` ;;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: Warning: Free variables in goal: X, Y
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `?P. mempty |== X % Y --> Y % X`
+
+The ~META_EXISTS_TAC~ tactic gets rid of the the existential quantifier, but adds the variable ~P~ as a metavariable. This allows us to instantiate it as the proof progresses:
+
+#+begin_src ocaml
+e (META_EXISTS_TAC);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(P:(?125766)Lambda)`;
+: 
+: `mempty |== X % Y --> Y % X`
+
+The rest of the proof progresses exactly as before. Especially given that we have hidden the lamdba terms, there is virtually no difference in the proof process:
+
+#+begin_src ocaml
+eseq (ruleseq chI_R);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+: 
+: `' X % Y |== Y % X`
+
+#+begin_src ocaml
+eseq (ruleseq chC);; 
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+: 
+: `' X % Y^' X % Y |== Y % X`
+
+Do not be fooled, however. This is Curry-Howard in all its glory!
+
+#+begin_src ocaml
+show_lam();;
+p();;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+: 
+: `' (Var x0 :: (X % Y))^' (Var x0 :: (X % Y)) |== y0 :: (Y % X)`
+
+#+begin_src ocaml
+eseq (ruleseq chX_R);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 2 subgoals (2 total)
+: Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+: 
+: `' (Var x0 :: (X % Y)) |== y2 :: X`
+: 
+: `' (Var x0 :: (X % Y)) |== x2 :: Y`
+
+#+begin_src ocaml
+eseq (ruleseq chX_L2);; 
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (2 total)
+: Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+: 
+: `' (Snd (Var x0) :: Y) |== x2 :: Y`
+
+#+begin_src ocaml
+eseq (ruleseq chID);; 
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+: 
+: `' (Var x0 :: (X % Y)) |== y2 :: X`
+
+We can hide the lambda terms again at any point.
+
+#+begin_src ocaml
+hide_lam();;
+eseq (ruleseq chX_L1);;
+eseq (ruleseq chID);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = No subgoals
+: Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+
+Our proof is complete and we can generate out theorem, though the existential quantifier makes is hardly usable. Validating the proof, however, is quite important, to ensure the delayed metavariable instantiation are still sound:
+
+#+begin_src ocaml
+top_thm();;
+#+end_src
+
+#+RESULTS:
+: val it : thm = |- ?P. mempty |== X % Y --> Y % X
+
+What is more interesting is that we can instantiate the original metavariable ~P~ to construct our lamdba term:
+#+begin_src ocaml
+top_constr "P";;
+#+end_src
+
+#+RESULTS:
+: val it : term = `Lam x0 (Prod (Snd (Var x0),Fst (Var x0)))`
+
+This is a direct translation of the proof we just performed into lambda calculus! It is a function that takes an argument ~x0~ (assumed to be a product) and returns a product with ~x0~'s elements flipped (~Snd~ followed by ~Fst~). This was all constructed automatically for us.
+
+*** A Type-checking Proof
+
+If we replace ~P~ in the previous goal with the term we constructed, we can start a type-checking proof, to prove that ~P~ does indeed have the right type:
+#+begin_src ocaml
+g `mempty |== Lam x (Prod (Snd (Var x),Fst (Var x))) :: (X % Y --> Y % X)` ;;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: Warning: Free variables in goal: X, Y, x
+: val it : goalstack = 1 subgoal (1 total)
+: 
+: `mempty |== X % Y --> Y % X`
+
+We can follow the exact same proof as before:
+
+#+begin_src ocaml
+eseq (ruleseq chI_R);;
+eseq (ruleseq chC);;
+eseq (ruleseq chX_R);;
+eseq (ruleseq chX_L2);;
+eseq (ruleseq chID);;
+eseq (ruleseq chX_L1);;
+eseq (ruleseq chID);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = No subgoals
+
+And once we are done, we can obtain a theorem, proving our type is correct:
+
+#+begin_src ocaml
+show_lam();;
+top_thm();;
+#+end_src
+
+#+RESULTS:
+: val it : thm =
+:   |- mempty |== Lam x (Prod (Snd (Var x),Fst (Var x))) :: (X % Y --> Y % X)
+
+#+begin_src ocaml :results silent
+hide_lam();;
+#+end_src
+
+
+*** Proving and Reusing Lemmas
+
+So far, we have been looking at interactive proofs. Our tactics can be packaged in the traditional HOL Light style. However, we use our own, extended tacticals, which unfortunately cannot be infix (at least until we find a way to add this to camlp5).
+
+Here is a packaged proof of commutativity of conjunction (without the implication this time):
+
+#+begin_src ocaml
+let TIMES_COMM = prove_seq( `' (a :: (X % Y)) |== Prod (Snd a, Fst a) :: (Y % X)` ,
+                            ETHENL 
+                              (ETHEN (ruleseq chC) (ruleseq chX_R))
+                              [
+                                ETHEN (ruleseq chX_L2) (ruleseq chID);
+                                ETHEN (ruleseq chX_L1) (ruleseq chID) ]
+                   );;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: val TIMES_COMM : thm = |- ' (a :: (X % Y)) |== Prod (Snd a,Fst a) :: (Y % X)
+
+Lemmas like this are only useful if we can employ them in other proofs. Given our convenient tactics, it would be nice if we could use lemmas like this to derive new inference rules.
+
+In this particular case, we can construct an inference rule that commutes a conjunction on the right-hand side (and later on the left-hand side) of the sequent. The rule can be expressed like this:
+
+#+begin_example
+`G |== a :: (X % Y) ===> G |== b :: (Y % X)`
+#+end_example
+
+The question is, what is the appropriate Curry-Howard translation for this rule? In other words, what should the lambda terms ~a~ and ~b~ be?
+
+A construction proof can give the answer quite easily:
+
+#+begin_src ocaml
+g `?a:(A)Lambda b. G |== a :: (X % Y) ===> G |== b :: (Y % X)` ;;
+e (REPEAT META_EXISTS_TAC);;
+e (MDISCH_TAC);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(a:(A)Lambda)`; `(b:(A)Lambda)`;
+: 
+:   0 [`G |== X % Y`]
+: 
+: `G |== Y % X`
+
+Note that ~MDISCH_TAC~ is an Isabelle Light tactic. It is the same as ~DISCH_TAC~, but for our special meta-implication.
+
+At this point we need to make smart use of ~Cut~ in order to apply our ~TIMES_COMM~ lemma. Doing this in vanilla HOL Light would be quite tedious. Our rule instantiation mechanics make it very easy:
+
+#+begin_src ocaml
+eseq (drule_seqtac [`c`,`Y % X`;`D`,chEmpty `:A`] chCut);; (* cut! *)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Warning: inventing type variables
+Warning: inventing type variables
+val it : goalstack = 2 subgoals (2 total)
+Metas: `(x0:(A)Lambda)`; `(a:(A)Lambda)`; `(b:(A)Lambda)`;
+
+  0 [`G |== Y % X`]
+
+`G |== Y % X`
+
+`' X % Y |== Y % X`
+#+end_example
+
+Now the first (bottom) goal matches our lemma exactly, whereas the second one matches the assumption. Then we are done!
+
+#+begin_src ocaml
+eseq (ruleseq TIMES_COMM);; (* Using the lemma we proved earlier *)
+eseq (seqassumption);;
+top_thm();;
+#+end_src
+
+#+RESULTS:
+: val it : thm = |- ?a b. G |== X % Y ===> G |== Y % X
+
+Based on this proof, ~a~ is just itself:
+#+begin_src ocaml
+top_constr "a" ;; 
+#+end_src
+
+#+RESULTS:
+: val it : term = `a`
+
+And given that, ~b~ should be ~a~ with the elements swapped:
+
+#+begin_src ocaml
+top_constr "b" ;; 
+#+end_src
+
+#+RESULTS:
+: val it : term = `Prod (Snd a,Fst a)`
+
+Replace the constructed ~a~ and ~b~ in the original goal, and package the proof:
+#+begin_src ocaml
+let chTimesCommR = prove_seq (`G |== a:(A)Lambda :: (X % Y) ===>
+                                         G |== Prod (Snd a,Fst a) :: (Y % X)` ,
+				                       ETHENL ( ETHEN
+				                                  (ETAC (MDISCH_TAC))
+				                                  (drule_seqtac [`c`,`Y % X`;`D`,chEmpty `:A`] chCut) ) [
+				                           ruleseq TIMES_COMM;
+				                           seqassumption]);;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: Warning: inventing type variables
+: val chTimesCommR : thm = |- G |== X % Y ===> G |== Y % X
+
+And /voila/! A brand new, derived inference rule!
+
+Let's do the same for the left-hand side. First construct our lambda terms:
+
+#+begin_src ocaml
+g `?a:(A)Lambda b. G ^ ' (a :: (X % Y)) |== z :: C  ===> G ^ ' (b :: (Y % X)) |== z :: C` ;;
+e (REPEAT META_EXISTS_TAC);;
+e (MDISCH_TAC);;
+eseq (rule_seqtac [`a`,`X % Y`;`G`,`' (b :: (Y % X))`] chCut);;
+eseq (ruleseq TIMES_COMM);;
+eseq (seqassumption);;
+top_thm();;
+top_constr "a";;
+#+end_src
+
+#+RESULTS:
+: val it : term = `Prod (Snd b,Fst b)`
+
+And then instantiate the rule and package the proof:
+
+#+begin_src ocaml
+let chTimesCommL = prove_seq (`G ^ ' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C  ===>
+                                G ^ ' (a :: (Y % X)) |== z :: C` ,
+				              ETHENL ( ETHEN
+				                         (ETAC (MDISCH_TAC))
+				                         (rule_seqtac [`a`,`X % Y`;`G`,`' (a :: (Y % X))`] chCut) ) [
+				                  ruleseq TIMES_COMM;
+				                  seqassumption]);;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: Warning: inventing type variables
+: Warning: inventing type variables
+: Warning: inventing type variables
+: val chTimesCommL : thm = |- G^' X % Y |== C ===> G^' Y % X |== C
+
+Now that we have 2 new inference rules, let's see them in action in a new proof:
+
+#+begin_src ocaml
+g `? P. mempty |== P :: (((A % B) % C) --> (C % (B % A)))` ;;
+e (REPEAT META_EXISTS_TAC);;
+eseq (ruleseq chI_R);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: 
+: `' (A % B) % C |== C % B % A`
+
+Let's swap things on the right-hand side:
+
+#+begin_src ocaml
+eseq (ruleseq chTimesCommR);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (1 total)
+: Metas: `(a1:(?126353)Lambda)`; `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: 
+: `' (A % B) % C |== (B % A) % C`
+
+Keep going:
+
+#+begin_src ocaml
+eseq (ruleseq chC);;
+eseq (ruleseq chX_R);;
+
+eseq (ruleseq chX_L1);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (2 total)
+: Metas: `(x3:(?126353)Lambda)`; `(y3:(?126353)Lambda)`; `(a1:(?126353)Lambda)`; `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: 
+: `' A % B |== B % A`
+
+The perfect goal to use ~chTimesCommL~:
+
+#+begin_src ocaml
+eseq (ruleseq chTimesCommL);;
+#+end_src
+
+#+RESULTS:
+: val it : goalstack = 1 subgoal (2 total)
+: Metas: `(x3:(?126353)Lambda)`; `(y3:(?126353)Lambda)`; `(a1:(?126353)Lambda)`; `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: 
+: `' B % A |== B % A`
+
+
+The rest is straightforward:
+
+#+begin_src ocaml
+eseq (ruleseq chID);;
+
+eseq (ruleseq chX_L2);;
+eseq (ruleseq chID);;
+
+top_thm();;
+#+end_src
+
+#+RESULTS:
+: val it : thm = |- ?P. mempty |== (A % B) % C --> C % B % A
+
+And why not construct the lambda term for this slightly more complex type?
+
+#+begin_src ocaml
+top_constr "P";; 
+#+end_src
+
+#+RESULTS:
+: val it : term =
+:   `Lam x0
+:    (Prod
+:    (Snd (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))),
+:     Fst (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0)))))`
+
+Due to the (implicit) cuts, our constructed term can be reduced with rewritting:
+
+#+begin_src ocaml
+REWRITE_CONV[lamFst;lamSnd] (top_constr "P");; 
+#+end_src
+
+#+RESULTS:
+: val it : thm =
+:   |- Lam x0
+:      (Prod
+:      (Snd (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))),
+:       Fst (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))))) =
+:      Lam x0
+:      (Prod (Snd (Var x0),Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0)))))
+
+If ~Fst~ and ~Snd~ were primitive constructors, we would not be able to use rewritting like this, nor can we define a notion of cut elimination.
+
+We could also define function application as a function in HOL instead of a primitive constructor. However, this would require a definition of variable substitution, which in turn would require managing bound variables. This is notoriously hard, especially with the limited features of HOL Light, and therefore beyond the scope of our tutorial. Other theorem provers (such as Isabelle or HOL4) which support appropriate mechanisms (Higher Order Abstract Syntax, de Bruijn indexes etc.) would be more suitable for this purpose.
