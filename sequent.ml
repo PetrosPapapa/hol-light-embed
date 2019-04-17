@@ -5,7 +5,7 @@
 (*                   Petros Papapanagiotou, Jacques Fleuriot                 *)
 (*              Center of Intelligent Systems and their Applications         *)
 (*                           University of Edinburgh                         *)
-(*                                 2009-2017                                 *)
+(*                                 2009-2019                                 *)
 (* ========================================================================= *)
 
 (* Dependencies *)
@@ -279,7 +279,7 @@ let (apply_seqtac:(?glfrees:term list)->((term list)->(term * term) list -> meta
     let finstlist = number_vars_instlist fnum instlist
     and frl = number_vars_meta_rule fnum rl in
     let gstate,newmetas = ETHEN (rtac glf finstlist frl)
-				(ETAC ( TRY CONJ_TAC THEN CONV_TAC NORM_MSET_CONV )) metas gl in
+				(ETAC ( CONV_TAC NORM_MSET_CONV THEN REPEAT CONJ_TAC )) metas gl in
     gstate, ((if (ctr < 0) then ctr else ctr + 1),newmetas);;
 
 let create_seq_goal:(string * thm) list -> goal -> goal =
@@ -314,17 +314,19 @@ let (rulem_seqtac:(term list)->(term*term) list->meta_rule->(term list) etactic)
     let dischls = map create_dischl new_hyps in
 
     ((newmetas,ins),new_goals,fun i l ->  
+                              try (
       let thm = INSTANTIATE_ALL i thm in (* NORM_MSET_INST_ALL i thm in *)
       let thm2 = PROVE_MULTISET_EQ (concl thm) (instantiate i w) in
 
       let res = List.fold_left 
-	(fun t1 t2 -> MSET_PROVE_HYP (INSTANTIATE_ALL i t2) t1) thm 
-	(map (dischi_pair i) (zip dischls l)) in
-(*
-      print_string "r:" ; print_thm res ; print_newline(); 
-  print_string "ret:" ; print_thm (EQ_MP (INSTANTIATE_ALL i thm2) res) ; print_newline();
-*)
-      EQ_MP thm2 res),newmetas@metas;;
+	              (fun t1 t2 -> MSET_PROVE_HYP (INSTANTIATE_ALL i t2) t1) thm 
+	              (map (dischi_pair i) (zip dischls l)) in
+      (* print_string "thl: "; print_thl l; print_newline();
+       * print_string "ithm: " ; print_thm thm ; print_newline(); 
+       * print_string "res: " ; print_thm res ; print_newline(); 
+       * print_string "thm2: " ; print_thm thm2 ; print_newline(); 
+       * print_string "ret: " ; print_thm (EQ_MP thm2 res) ; print_newline(); *)
+      EQ_MP thm2 res) with Failure s -> failwith ("ruleseq: Justification failed: " ^ s)),newmetas@metas;;
 
 
 let rule_seqtac ?(glfrees=([]:term list)) instlist thm = apply_seqtac ~glfrees:glfrees rulem_seqtac instlist (mk_meta_rule thm);;
@@ -500,33 +502,6 @@ let fruleseq ?(lbl="") ?(reslbl="") ?(glfrees=([]:term list)) = frule_seqtac ~lb
 
 					
 
-
-(* ------------------------------------------------------------------------- *)
-(* "e" tactic application for the embedded logic tactics.                    *)
-(* ------------------------------------------------------------------------- *)
-						   
-let eseq:seqtactic -> goalstack =
-  fun tac -> e (ETAC_TAC (-1,(try(top_metas(p())) with Failure _ -> ([]:term list))) tac);;
-
-(* ------------------------------------------------------------------------- *)
-(* Convert a tactic to a seqtactic.                                          *)
-(* ------------------------------------------------------------------------- *)
-(*
-let SEQTAC = ETAC_TAC (-1,(try(top_metas(p())) with Failure _ -> ([]:term list)));;
- *)
-let SEQTAC:tactic->seqtactic =
-  fun tac (i,m) gl ->
-    let ((metas,_),_,_) as gs = tac gl in
-    gs,(i,metas@m);;
-
-(* ------------------------------------------------------------------------- *)
-(* "prove" a theorem using the embedded logic tactics.                       *)
-(* ------------------------------------------------------------------------- *)
-
-let prove_seq:term * seqtactic -> thm =
-  fun (tm,tac) -> prove(tm,ETAC_TAC (0,([]:term list)) tac);;
-
-  
 (* ------------------------------------------------------------------------- *)
 (* Assumption matching using seq_match.                                      *)
 (* ------------------------------------------------------------------------- *)
@@ -542,21 +517,31 @@ let seqassumption :seqtactic =
  *)
 
 let (MATCH_ACCEPT_SEQTAC:thm -> seqtactic) =
-  fun th (i,metas) (asl,w) ->
+  fun th (n,metas) (asl,w) ->
   let avoids = subtract (frees w) metas in
   try let inst = REV_PART_SEQMATCH_I avoids metas th w in
 	  let thm = INSTANTIATE_ALL inst th in
 	  
-	  (([],inst),[],fun i [] ->
-	                let finst = compose_insts inst i in
-	                let thm = INSTANTIATE_ALL i thm in
-	                let thm2 = PROVE_MULTISET_EQ (concl thm) (instantiate finst w) in
-	                EQ_MP thm2 thm),(i,metas)
+	  (([],inst),[],fun i [] -> 
+                    try (
+	                  let finst = compose_insts inst i in
+	                  let thm = INSTANTIATE_ALL i thm in
+	                  let thm2 = PROVE_MULTISET_EQ (concl thm) (instantiate finst w) in
+                      (* print_string "thm2: "; print_thm thm2 ; print_newline();
+                       * print_string "thm: "; print_thm thm ; print_newline();
+                       * print_string "ret: " ; print_thm (EQ_MP thm2 thm); print_newline(); *)
+	                  EQ_MP thm2 thm
+                    ) with Failure s -> 
+                      failwith ("MATCH_ACCEPT_SEQTAC: Justification failed:" ^ s))
+      ,(n,metas)
   with Failure s -> failwith ("MATCH_ACCEPT_SEQTAC: " ^ s);;
 
 let seqassumption :seqtactic =
-  fun (i,metas) (asl,w as g) ->
-    tryfind (fun (_,th) -> MATCH_ACCEPT_SEQTAC th (i,metas) g) asl;;
+  fun (i,metas) (asl,w as g) -> 
+  try ( 
+    tryfind (fun (_,th) -> MATCH_ACCEPT_SEQTAC th (i,metas) g) asl 
+  ) with Failure _ -> 
+    failwith ("seqassumption: Failed to find matching assumption: " ^ (string_of_term w));;
 
 (* ------------------------------------------------------------------------- *)
 (* Matching labelled assumptions.                                            *)
@@ -612,6 +597,83 @@ let (META_EXISTS_SEQTAC:seqtactic) =
   let v' = mk_primed_var avoids v in
   X_META_EXISTS_TAC v' gl,(i,v' :: metas);;
 
+
+(* ------------------------------------------------------------------------- *)
+(* "e" tactic application for the embedded logic tactics.                    *)
+(* ------------------------------------------------------------------------- *)
+						   
+let eseq:seqtactic -> goalstack =
+  fun tac -> e (ETAC_TAC (-1,(try(top_metas(p())) with Failure _ -> ([]:term list))) tac);;
+
+(* ------------------------------------------------------------------------- *)
+(* Convert a tactic to a seqtactic.                                          *)
+(* ------------------------------------------------------------------------- *)
+(*
+let SEQTAC = ETAC_TAC (-1,(try(top_metas(p())) with Failure _ -> ([]:term list)));;
+ *)
+let SEQTAC:tactic->seqtactic =
+  fun tac (i,m) gl ->
+    let ((metas,_),_,_) as gs = tac gl in
+    gs,(i,metas@m);;
+
+(* ------------------------------------------------------------------------- *)
+(* "prove" a theorem using the embedded logic tactics.                       *)
+(* ------------------------------------------------------------------------- *)
+
+let prove_seq:term * seqtactic -> thm =
+  fun (tm,tac) -> prove(tm,ETAC_TAC (0,([]:term list)) tac);;
+
+
+(* ------------------------------------------------------------------------- *)
+(* Prove a theorem using the embedded logic tactics.                       
+   Return the metavariables and their instantiations as well.
+   Useful for construction proofs.
+*)
+(* ------------------------------------------------------------------------- *)
+
+let (SEQCONSTR_PROOF : goal * 'a etactic -> thm * (term list * instantiation)) =
+  fun (g,tac) ->
+    let gstate = mk_goalstate g,(0,([]:term list)) in
+    let (metas,sgs,just),s' = eby tac gstate in
+    if sgs = [] then just null_inst [],metas
+    else failwith "SEQCONSTR_PROOF: Unsolved goals";;
+
+let seqprove (t,tac) =
+  let th,metas = SEQCONSTR_PROOF (([],t),tac) in
+  let t' = concl th in
+  if t' = t then th,metas else
+  try EQ_MP (ALPHA t' t) th,metas
+  with Failure _ -> failwith "prove: justification generated wrong theorem";;
+
+
+(* ------------------------------------------------------------------------- *)
+(* 
+   Takes a term of the form:
+   ?v1 v2 ... vj . t
+   and a tactic proving t.
+   It proves it using REPEAT META_EXISTS_TAC THEN tac
+   Based on this, each vi is treated as a metavariable.
+   It then instantiates all metavariables, removing numbers, and reproves
+   the term t using tac.
+
+   This allows the proof of reusable lemmas in one go, without having to
+   specify the computational terms explicitly.
+   This allows for lemmas that work across multiple correspondences of the
+   same logic.
+*)
+(* ------------------------------------------------------------------------- *)
+
+let constr_prove (tm,tac) = 
+  try (
+    let vars,bod = strip_exists tm in
+    let _,(_,inst) = seqprove (tm, ETHEN (EREPEAT META_EXISTS_SEQTAC) tac) in 
+    let sub = map (fun v -> (instantiate inst v,v)) vars in
+    let lemma = unnumber_vars_tm (subst sub bod) in
+    prove_seq (lemma, tac)
+  ) with Failure s -> failwith ("constr_prove: " ^ s);;
+   
+
+
   
 
 let seqstatestr (i,metas) =
@@ -620,4 +682,5 @@ let seqstatestr (i,metas) =
 let print_seqstate st = print_string (seqstatestr st); print_newline();;
 
 (* ------------------------------------------------------------------------- *)
+
 

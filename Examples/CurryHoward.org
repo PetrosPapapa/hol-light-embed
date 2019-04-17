@@ -894,6 +894,7 @@ top_constr "a";;
 And then instantiate the rule and package the proof:
 
 #+begin_src ocaml
+show_lam();;
 let chTimesCommL = prove_seq (`G ^ ' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C  ===>
                                 G ^ ' (a :: (Y % X)) |== z :: C` ,
 				              ETHENL ( ETHEN
@@ -908,11 +909,37 @@ let chTimesCommL = prove_seq (`G ^ ' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C 
 : Warning: inventing type variables
 : Warning: inventing type variables
 : Warning: inventing type variables
-: val chTimesCommL : thm = |- G^' X % Y |== C ===> G^' Y % X |== C
+: val chTimesCommL : thm =
+:   |- G^' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C ===>
+:      G^' (a :: (Y % X)) |== z :: C
+
+We can do the same without explicitly stating the computational terms we want to construct. This way, if we change anything in the correspondence, the lemma will still be proven:
+
+#+begin_src ocaml
+let chTimesCommL = constr_prove (`?a b. G ^ ' (b :: (X % Y)) |== z :: C  ===>
+                                   G ^ ' (a :: (Y % X)) |== z :: C` ,
+				                 ETHENL ( ETHEN (SEQTAC MDISCH_TAC)
+				                            (rule_seqtac [`a`,`X % Y`;`G`,`' (a :: (Y % X))`] chCut) ) 
+                                   [
+				                     ruleseq TIMES_COMM;
+				                     seqassumption
+                                   ]
+                     );;
+#+end_src
+
+#+RESULTS:
+: Warning: inventing type variables
+: Warning: inventing type variables
+: Warning: inventing type variables
+: Warning: inventing type variables
+: val chTimesCommL : thm =
+:   |- G^' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C ===>
+:      G^' (a :: (Y % X)) |== z :: C
 
 Now that we have 2 new inference rules, let's see them in action in a new proof:
 
 #+begin_src ocaml
+hide_lam();;
 g `? P. mempty |== P :: (((A % B) % C) --> (C % (B % A)))` ;;
 e (REPEAT META_EXISTS_TAC);;
 eseq (ruleseq chI_R);;
@@ -920,7 +947,7 @@ eseq (ruleseq chI_R);;
 
 #+RESULTS:
 : val it : goalstack = 1 subgoal (1 total)
-: Metas: `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: Metas: `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
 : 
 : `' (A % B) % C |== C % B % A`
 
@@ -932,7 +959,7 @@ eseq (ruleseq chTimesCommR);;
 
 #+RESULTS:
 : val it : goalstack = 1 subgoal (1 total)
-: Metas: `(a1:(?126353)Lambda)`; `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: Metas: `(a1:(?126376)Lambda)`; `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
 : 
 : `' (A % B) % C |== (B % A) % C`
 
@@ -947,7 +974,7 @@ eseq (ruleseq chX_L1);;
 
 #+RESULTS:
 : val it : goalstack = 1 subgoal (2 total)
-: Metas: `(x3:(?126353)Lambda)`; `(y3:(?126353)Lambda)`; `(a1:(?126353)Lambda)`; `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: Metas: `(x3:(?126376)Lambda)`; `(y3:(?126376)Lambda)`; `(a1:(?126376)Lambda)`; `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
 : 
 : `' A % B |== B % A`
 
@@ -959,7 +986,7 @@ eseq (ruleseq chTimesCommL);;
 
 #+RESULTS:
 : val it : goalstack = 1 subgoal (2 total)
-: Metas: `(x3:(?126353)Lambda)`; `(y3:(?126353)Lambda)`; `(a1:(?126353)Lambda)`; `(x0:?126353)`; `(y0:(?126353)Lambda)`; `(P:(?126353)Lambda)`;
+: Metas: `(x3:(?126376)Lambda)`; `(y3:(?126376)Lambda)`; `(a1:(?126376)Lambda)`; `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
 : 
 : `' B % A |== B % A`
 
