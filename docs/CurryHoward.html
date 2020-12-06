@@ -1,0 +1,1784 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-12-06 Sun 16:18 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Embedding Example: Curry-Howard</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Petros Papapanagiotou" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+<style type="text/css"> pre.src {background-color: #3E3D31; color: #F8F8F0;}</style>
+<script type="text/javascript">
+// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
+<!--/*--><![CDATA[/*><!--*/
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+    /*]]>*///-->
+// @license-end
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Embedding Example: Curry-Howard</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org8a84f39">1. Introduction</a>
+<ul>
+<li><a href="#org00e4026">1.1. Loading the library</a></li>
+<li><a href="#org4b89870">1.2. Multiset notation</a></li>
+</ul>
+</li>
+<li><a href="#org8316459">2. A Simple Logic</a>
+<ul>
+<li><a href="#org558fdee">2.1. Embedding</a>
+<ul>
+<li><a href="#org1425201">2.1.1. Type Declaration</a></li>
+<li><a href="#org17c920a">2.1.2. Inference rules</a></li>
+</ul>
+</li>
+<li><a href="#org0109a9a">2.2. Proofs</a>
+<ul>
+<li><a href="#org16302ae">2.2.1. Vanilla HOL Light</a></li>
+<li><a href="#org2aa0ac9">2.2.2. Using our library</a></li>
+<li><a href="#org3ba9645">2.2.3. Explicit Instantiation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#orgf49f1d4">3. Curry-Howard</a>
+<ul>
+<li><a href="#orgf641ec3">3.1. Embedding</a>
+<ul>
+<li><a href="#org5d6a231">3.1.1. Lambda Terms</a></li>
+<li><a href="#org708099a">3.1.2. Type Annotations</a></li>
+<li><a href="#orga7d77d3">3.1.3. Inference Rules</a></li>
+</ul>
+</li>
+<li><a href="#orgd94c0a1">3.2. Proofs</a>
+<ul>
+<li><a href="#org1f50656">3.2.1. A Construction Proof</a></li>
+<li><a href="#org2441c29">3.2.2. A Type-checking Proof</a></li>
+<li><a href="#org9172a6d">3.2.3. Proving and Reusing Lemmas</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org8a84f39" class="outline-2">
+<h2 id="org8a84f39"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org00e4026" class="outline-3">
+<h3 id="org00e4026"><span class="section-number-3">1.1</span> Loading the library</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+The library can be loaded with a simple command:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">loads <span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"embed/sequent.ml"</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+This includes a small theory of multisets.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4b89870" class="outline-3">
+<h3 id="org4b89870"><span class="section-number-3">1.2</span> Multiset notation</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+In an attempt to declutter multiset expressions, we adopt the following HOL Light notation:
+</p>
+<ul class="org-ul">
+<li><code>mempty</code> : empty multiset</li>
+<li>Single quote <code>'</code>: singleton multiset - e.g. <code>' 5</code> is <code>{5}</code>.</li>
+<li>Hat <code>^</code>: multiset sum (munion) - e.g. <code>' 5 ^ ' 5 ^ ' 6</code> is <code>{5,5,6}</code>.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8316459" class="outline-2">
+<h2 id="org8316459"><span class="section-number-2">2</span> A Simple Logic</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+We embed a simple propositional logic, limited to conjunction and implication. 
+</p>
+
+<p>
+We will then try to prove a simple object-level theorem using vanilla HOL Light and our library.
+</p>
+</div>
+
+<div id="outline-container-org558fdee" class="outline-3">
+<h3 id="org558fdee"><span class="section-number-3">2.1</span> Embedding</h3>
+<div class="outline-text-3" id="text-2-1">
+</div>
+<div id="outline-container-org1425201" class="outline-4">
+<h4 id="org1425201"><span class="section-number-4">2.1.1</span> Type Declaration</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+We define propositional terms as a recursive type <code>Prop</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">prop_INDUCT</span>,<span style="color: #FD971F;">prop_RECURSION</span> = define_type
+                                   <span style="color: #E6DB74;">"Prop = Truth</span>
+<span style="color: #E6DB74;">                                    | Product Prop Prop</span>
+<span style="color: #E6DB74;">                                    | Implies Prop Prop"</span><span style="color: #ff4500;">;;</span>    
+</pre>
+</div>
+
+<p>
+We also add some syntax sugar. Namely, we set <code>--&gt;</code> as the infix operator for implication (<code>Implies</code>) and <code>%</code> as the infix operator for conjunction (<code>Product</code>):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">parse_as_infix<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"--&gt;"</span>,<span style="color: #66D9EF;">(</span>13,<span style="color: #E6DB74;">"right"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+override_interface<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"--&gt;"</span>,<span style="color: #F8F8F2; background-color: #272822;">`Implies</span>`<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+parse_as_infix<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"%"</span>,<span style="color: #66D9EF;">(</span>14,<span style="color: #E6DB74;">"right"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+override_interface<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"%"</span>,<span style="color: #F8F8F2; background-color: #272822;">`Product</span>`<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org17c920a" class="outline-4">
+<h4 id="org17c920a"><span class="section-number-4">2.1.2</span> Inference rules</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+First we introduce an infix operator for logical consequence, i.e. the &ldquo;<i>turnstile</i>&rdquo;. 
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">parse_as_infix<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"|="</span>,<span style="color: #66D9EF;">(</span>11,<span style="color: #E6DB74;">"right"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+We then provide an inductive definition for the operator based on the inference rules. Each line (conjunct) in the definition corresponds to one inference rule, in the following order:
+</p>
+<ol class="org-ol">
+<li>Identity (<code>ID</code>)</li>
+<li>Weakening (<code>W</code>)</li>
+<li>Contraction (<code>C</code>)</li>
+<li>Cut (<code>Cut</code>)</li>
+<li>Conjunction Right (<code>RX</code>)</li>
+<li>Conjunction Left1 (<code>L1X</code>)</li>
+<li>Conjunction Left2 (<code>L2X</code>)</li>
+<li>Implication Left (<code>L--&gt;</code>)</li>
+<li>Implication Right (<code>R--&gt;</code>)</li>
+</ol>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span class="linenr"> 0: </span><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">propRULES</span>,<span style="color: #FD971F;">propINDUCT</span>,<span style="color: #FD971F;">propCASES</span> = new_inductive_definition 
+<span class="linenr"> 1: </span>`<span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span>a. ' a <span style="color: #F8F8F0;">|=</span> a<span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 2: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a c. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' a <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 3: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a c. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' a <span style="color: #F8F8F0;">^</span> ' a <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' a <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 4: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> a c. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|=</span> a<span style="color: #66D9EF;">)</span> /\ <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">^</span> ' a <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 5: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> a b. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|=</span> a<span style="color: #66D9EF;">)</span> /\ <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|=</span> b<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|=</span> a <span style="color: #F8F8F0;">%</span> b<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 6: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a b c. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' a <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>a <span style="color: #F8F8F0;">%</span> b<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 7: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a b c. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' b <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>a <span style="color: #F8F8F0;">%</span> b<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 8: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> a b c. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' b <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span> /\ <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|=</span> a<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>a --&gt; b<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|=</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 9: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a b. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' a <span style="color: #F8F8F0;">|=</span> b<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|=</span> <span style="color: #A6E22E;">(</span>a --&gt; b<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+<span class="linenr">10: </span>` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+We now break up the definition into the individual rules. We also do some pre-processing to get them ready to be used as (embedded) &ldquo;meta-rules&rdquo;. We keep unprocessed, primed versions of the rules as well, to demonstrate how a proof would work out using vanilla HOL Light.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #AE81FF;">[</span><span style="color: #FD971F;">pID</span>;
+     <span style="color: #FD971F;">pW</span>; <span style="color: #FD971F;">pC</span>; <span style="color: #FD971F;">pCut</span>; 
+     <span style="color: #FD971F;">pX_R</span>; <span style="color: #FD971F;">pX_L1</span>; <span style="color: #FD971F;">pX_L2</span>;
+     <span style="color: #FD971F;">pI_L</span>; <span style="color: #FD971F;">pI_R</span>
+    <span style="color: #AE81FF;">]</span> = 
+  map <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MIMP_RULE</span> o <span style="color: #F8F8F2; background-color: #272822;">SPEC_ALL</span> o <span style="color: #F8F8F2; background-color: #272822;">REWRITE_RULE</span><span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">IMP_CONJ</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span> 
+    <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">CONJUNCTS</span> propRULES<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #AE81FF;">[</span><span style="color: #FD971F;">pID'</span>;
+     <span style="color: #FD971F;">pW'</span>; <span style="color: #FD971F;">pC'</span>; <span style="color: #FD971F;">pCut'</span>; 
+     <span style="color: #FD971F;">pX_R'</span>; <span style="color: #FD971F;">pX_L1'</span>; <span style="color: #FD971F;">pX_L2'</span>;
+     <span style="color: #FD971F;">pI_L'</span>; <span style="color: #FD971F;">pI_R'</span>
+    <span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">CONJUNCTS</span> propRULES<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0109a9a" class="outline-3">
+<h3 id="org0109a9a"><span class="section-number-3">2.2</span> Proofs</h3>
+<div class="outline-text-3" id="text-2-2">
+</div>
+<div id="outline-container-org16302ae" class="outline-4">
+<h4 id="org16302ae"><span class="section-number-4">2.2.1</span> Vanilla HOL Light</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+Set the goal:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">g <span style="color: #F8F8F2; background-color: #272822;">`mempty</span> <span style="color: #F8F8F0;">|=</span> <span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span> --&gt; <span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span>` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: Free variables in goal: X, Y
+val it : goalstack = 1 subgoal (1 total)
+
+`mempty |= X % Y --&gt; Y % X`
+</pre>
+
+
+<p>
+Apply <code>R--&gt;</code>:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_MP_TAC</span> pI_R'<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`mempty^' (X % Y) |= Y % X`
+</pre>
+
+
+<p>
+Now we want to apply contraction:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">pC'<span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- !G a c. G^' a^' a |= c ==&gt; G^' a |= c
+</pre>
+
+
+<p>
+We are lucky that, thanks to the empty multiset, the rule matches directly so that:
+</p>
+<ul class="org-ul">
+<li><code>G</code> = <code>mempty</code></li>
+<li><code>a</code> = <code>X % Y</code></li>
+<li><code>c</code> = <code>Y % X</code></li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_MP_TAC</span> pC'<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`mempty^' (X % Y)^' (X % Y) |= Y % X`
+</pre>
+
+
+<p>
+Now we want to apply <code>RX</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">pX_R'<span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- !G D a b. G |= a /\ D |= b ==&gt; G^D |= a % b
+</pre>
+
+
+<p>
+This time we are not as lucky. We want the left-hand side of the turnstile in the goal to match the form <code>G^D</code>. If we apply the rule directly we will get the following match:
+</p>
+<ul class="org-ul">
+<li><code>G</code> = <code>mempty</code></li>
+<li><code>D</code> = <code>' (X % Y)^' (X % Y)</code></li>
+</ul>
+
+<p>
+The result is not what we want:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_MP_TAC</span> pX_R'<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`mempty |= Y /\ ' (X % Y)^' (X % Y) |= X`
+</pre>
+
+
+<p>
+So we backtrack. We can use the <code>MUNION_EMPTY2</code> to get rid of the empty multiset:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">b<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+<span style="color: #F8F8F2; background-color: #272822;">MUNION_EMPTY2</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- (mempty^M) = M
+</pre>
+
+
+<p>
+So we use rewritting:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">REWRITE_TAC</span><span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">MUNION_EMPTY2</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`' (X % Y)^' (X % Y) |= Y % X`
+</pre>
+
+
+<p>
+Now the rule will give us what we wanted:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_MP_TAC</span> pX_R'<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`' (X % Y) |= Y /\ ' (X % Y) |= X`
+</pre>
+
+
+<p>
+We use <code>CONJ_TAC</code> to break our conjunction to 2 subgoals:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">CONJ_TAC</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 2 subgoals (2 total)
+
+`' (X % Y) |= X`
+
+`' (X % Y) |= Y`
+</pre>
+
+
+<p>
+Now we want to use the <code>L2X</code> rule:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">pX_L2'<span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- !G a b c. G^' b |= c ==&gt; G^' (a % b) |= c
+</pre>
+
+
+<p>
+&#x2026;but we can&rsquo;t, because we have nothing to match to <code>G</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_MP_TAC</span> pX_L2'<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Exception: Failure "MATCH_MP_TAC: No match".
+</pre>
+
+
+<p>
+We need to add an empty multiset, so that <code>G = mempty</code>. One way to do this is by introducing the exact form that we want as a subgoal. We use rewritting with <code>MUNION_EMPTY2</code> to prove that the new subgoal is equivalent to the original:
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">SUBGOAL_THEN</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">`mempty</span> <span style="color: #F8F8F0;">^</span> '<span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|=</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span>`<span style="color: #66D9EF;">)</span>
+     <span style="color: #66D9EF;">(</span><span style="color: #F92672;">fun</span> <span style="color: #FD971F;">th</span> -&gt; <span style="color: #F8F8F2; background-color: #272822;">ACCEPT_TAC</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">REWRITE_RULE</span><span style="color: #E6DB74;">[</span><span style="color: #F8F8F2; background-color: #272822;">MUNION_EMPTY2</span><span style="color: #E6DB74;">]</span> th<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (2 total)
+
+`mempty^' (X % Y) |= Y`
+</pre>
+
+
+<p>
+Now we can use the rule:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_MP_TAC</span> pX_L2'<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (2 total)
+
+`mempty^' Y |= Y`
+</pre>
+
+
+<p>
+Getting rid of the empty multiset again, as <code>ID</code> will not like it:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">REWRITE_TAC</span><span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">MUNION_EMPTY2</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (2 total)
+
+`' Y |= Y`
+</pre>
+
+
+<p>
+The identity rule completes this branch of the proof:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_ACCEPT_TAC</span> pID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`' (X % Y) |= X`
+</pre>
+
+
+<p>
+The second branch is symmetrical:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">SUBGOAL_THEN</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">`mempty</span> <span style="color: #F8F8F0;">^</span> '<span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|=</span> <span style="color: #F8F8F2; background-color: #272822;">X</span>`<span style="color: #66D9EF;">)</span>
+     <span style="color: #66D9EF;">(</span><span style="color: #F92672;">fun</span> <span style="color: #FD971F;">th</span> -&gt; <span style="color: #F8F8F2; background-color: #272822;">ACCEPT_TAC</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">REWRITE_RULE</span><span style="color: #E6DB74;">[</span><span style="color: #F8F8F2; background-color: #272822;">MUNION_EMPTY2</span><span style="color: #E6DB74;">]</span> th<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MATCH_MP_TAC</span> pX_L1' <span style="color: #F8F8F2; background-color: #272822;">THEN</span> <span style="color: #F8F8F2; background-color: #272822;">REWRITE_TAC</span><span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">MUNION_EMPTY2</span><span style="color: #66D9EF;">]</span> <span style="color: #F8F8F2; background-color: #272822;">THEN</span> <span style="color: #F8F8F2; background-color: #272822;">MATCH_ACCEPT_TAC</span> pID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = No subgoals
+</pre>
+
+
+<p>
+Our proof is complete, so we can reconstruct the theorem we just proved. This also validates the whole proof:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">top_thm<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- mempty |= X % Y --&gt; Y % X
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org2aa0ac9" class="outline-4">
+<h4 id="org2aa0ac9"><span class="section-number-4">2.2.2</span> Using our library</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+We reset the goal to the initial state. This time we will use our library:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">g <span style="color: #F8F8F2; background-color: #272822;">`mempty</span> <span style="color: #F8F8F0;">|=</span> <span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span> --&gt; <span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span>` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: Free variables in goal: X, Y
+val it : goalstack = 1 subgoal (1 total)
+
+`mempty |= X % Y --&gt; Y % X`
+</pre>
+
+
+<p>
+The sequence of the rules is exactly the same, starting with <code>R--&gt;</code>. 
+</p>
+
+<p>
+The <code>eseq</code> command is an extension of <code>e</code> for our extended (embedded *seq*uent calculus) tactics. 
+</p>
+
+<p>
+The <code>ruleseq</code> tactic uses any embedded sequent calculus rule in a backwards reasoning step (as <code>MATCH_MP_TAC</code> does):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq pI_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`' (X % Y) |= Y % X`
+</pre>
+
+
+<p>
+No empty multisets appear this time. Now we can use <code>C</code> directly:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq pC<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`' (X % Y)^' (X % Y) |= Y % X`
+</pre>
+
+
+<p>
+Again, no empty multiset to clutter our goal. We can use <code>RX</code> and it will match directly:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq pX_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 2 subgoals (2 total)
+
+`' (X % Y) |= X`
+
+`' (X % Y) |= Y`
+</pre>
+
+
+<p>
+Notice that the subgoals were also split automatically without explicit <code>CONJ_TAC</code>.
+</p>
+
+<p>
+Even though we are in the same state as before, without an empty multiset to match <code>G</code>, we can apply <code>L2X</code> with no problems:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq pX_L2<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (2 total)
+
+`' Y |= Y`
+</pre>
+
+
+<p>
+And finish it off with <code>ID</code>:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq pID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+
+`' (X % Y) |= X`
+</pre>
+
+
+<p>
+Symmetrically for the second branch:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq pX_L1<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq pID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = No subgoals
+</pre>
+
+
+<p>
+The proof validates fine, and we get the same theorem:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">top_thm<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- mempty |= X % Y --&gt; Y % X
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org3ba9645" class="outline-4">
+<h4 id="org3ba9645"><span class="section-number-4">2.2.3</span> Explicit Instantiation</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+Now, let&rsquo;s revisit this goal:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">g `' <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #AE81FF;">)</span><span style="color: #F8F8F0;">^</span>' <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #AE81FF;">)</span> <span style="color: #F8F8F0;">|=</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span>` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: Free variables in goal: X, Y
+val it : goalstack = 1 subgoal (1 total)
+
+`' (X % Y)^' (X % Y) |= Y % X`
+</pre>
+
+
+<p>
+In vanilla HOL Light we had an extra <code>mempty</code> lying around, so applying <code>RX</code> gave us the match <code>G = mempty</code>. Using our library there is no empty multiset to match to <code>G</code>. 
+</p>
+
+<p>
+The question is, what if we <i>actually wanted</i> <code>G</code> to be matched to an empty multiset and all of the rest of the context to go into <code>D</code>? 
+</p>
+
+<p>
+We can still do this by explicitly instantiating our rule, using <code>rule_seqtac</code>:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>rule_seqtac <span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">`D</span>`,`' <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #A6E22E;">)</span><span style="color: #F8F8F0;">^</span>' <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #A6E22E;">)</span>`<span style="color: #66D9EF;">]</span> pX_R<span style="color: #AE81FF;">)</span> <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+val it : goalstack = 2 subgoals (2 total)
+
+`' (X % Y)^' (X % Y) |= X`
+
+`mempty |= Y`
+</pre>
+
+
+<p>
+Note that we have provided no typing information for <code>D</code>, <code>X</code>, or <code>Y</code>, yet the system did not complain. It figured out and instantiated the types on its own. 
+</p>
+
+<p>
+We could also instantiate <code>G</code> to <code>mempty</code>. However, we do need to provide the type of <code>mempty</code> in that case, because it cannot be found in the goal and we can therefore not determine its type automatically:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">b<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>rule_seqtac <span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">`G</span>`,<span style="color: #F8F8F2; background-color: #272822;">`mempty</span>:<span style="color: #A6E22E;">(</span><span style="color: #66D9EF;">Prop</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">multiset`</span><span style="color: #66D9EF;">]</span><span style="color: #66D9EF;"> pX_R</span><span style="color: #AE81FF;">)</span> <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+Warning: inventing type variables
+val it : goalstack = 2 subgoals (2 total)
+
+`' (X % Y)^' (X % Y) |= X`
+
+`mempty |= Y`
+</pre>
+
+
+<p>
+Even though there was no <code>mempty</code> in the original goal, the system managed to apply the rule as we wanted.
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf49f1d4" class="outline-2">
+<h2 id="orgf49f1d4"><span class="section-number-2">3</span> Curry-Howard</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-orgf641ec3" class="outline-3">
+<h3 id="orgf641ec3"><span class="section-number-3">3.1</span> Embedding</h3>
+<div class="outline-text-3" id="text-3-1">
+</div>
+<div id="outline-container-org5d6a231" class="outline-4">
+<h4 id="org5d6a231"><span class="section-number-4">3.1.1</span> Lambda Terms</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+We begin by defining the lambda terms as a recursive type <code>Lambda</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">lamINDUCT</span>,<span style="color: #FD971F;">lamRECURSION</span> = define_type
+                               <span style="color: #E6DB74;">" Lambda = Var A</span>
+<span style="color: #E6DB74;">                                | App Lambda Lambda</span>
+<span style="color: #E6DB74;">                                | Prod (Lambda#Lambda)</span>
+<span style="color: #E6DB74;">                                | Lam A Lambda</span>
+<span style="color: #E6DB74;">                                "</span><span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<p>
+Our type is polymorphic to the type of the variable names. Typically this will be a <code>string</code>, but it alternative types may be used to facilitate substitutions, freshness conditions, etc.
+</p>
+
+<p>
+We add <code>@@</code> as an infix operator for function application (<code>App</code>):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">parse_as_infix<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"@@"</span>,<span style="color: #66D9EF;">(</span>10,<span style="color: #E6DB74;">"right"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span> 
+override_interface<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"@@"</span>,<span style="color: #F8F8F2; background-color: #272822;">`App</span>`<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+Normally projections would be primitively defined as part of the syntax. Cut elimination then yields their functionality. We are only working on shallow embeddings and object-level reasoning. We cannot perform cut elimination at this level. Because of this, we define projections as functions, so that they are more practical.
+</p>
+
+<p>
+The definitions rely on <code>FST</code> and <code>SND</code> which are functions over pairs in HOL Light. Constant and function names in HOL Light are case sensitive, so we can use <code>Fst</code> and <code>Snd</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">lamFst_DEF</span> = new_recursive_definition lamRECURSION 
+                   <span style="color: #F8F8F2; background-color: #272822;">`Fst</span> <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Prod</span> x :<span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">A</span><span style="color: #66D9EF;">)</span><span style="color: #66D9EF;">Lambda</span><span style="color: #AE81FF;">)</span> = <span style="color: #F8F8F2; background-color: #272822;">FST</span> x` <span style="color: #ff4500;">;;</span> 
+
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">lamFst</span> = prove <span style="color: #AE81FF;">(</span>`<span style="color: #F8F8F0;">!</span>x y. <span style="color: #F8F8F2; background-color: #272822;">Fst</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Prod</span> <span style="color: #A6E22E;">(</span>x,y<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> = x`, <span style="color: #F8F8F2; background-color: #272822;">REWRITE_TAC</span><span style="color: #66D9EF;">[</span>lamFst_DEF;<span style="color: #F8F8F2; background-color: #272822;">FST</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+
+
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">lamSnd_DEF</span> = new_recursive_definition lamRECURSION 
+                   <span style="color: #F8F8F2; background-color: #272822;">`Snd</span> <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Prod</span> x :<span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">A</span><span style="color: #66D9EF;">)</span><span style="color: #66D9EF;">Lambda</span><span style="color: #AE81FF;">)</span> = <span style="color: #F8F8F2; background-color: #272822;">SND</span> x` <span style="color: #ff4500;">;;</span> 
+
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">lamSnd</span> = prove <span style="color: #AE81FF;">(</span>`<span style="color: #F8F8F0;">!</span>x y. <span style="color: #F8F8F2; background-color: #272822;">Snd</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Prod</span> <span style="color: #A6E22E;">(</span>x,y<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> = y`, <span style="color: #F8F8F2; background-color: #272822;">REWRITE_TAC</span><span style="color: #66D9EF;">[</span>lamSnd_DEF;<span style="color: #F8F8F2; background-color: #272822;">SND</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org708099a" class="outline-4">
+<h4 id="org708099a"><span class="section-number-4">3.1.2</span> Type Annotations</h4>
+<div class="outline-text-4" id="text-3-1-2">
+<p>
+We want to be able to annotate lambda terms with propositions as types. We actually make this a little more general than that, so we can annotate <i>any</i> term with types:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">tmINDUCT</span>,<span style="color: #FD971F;">tmRECURSION</span> = define_type <span style="color: #E6DB74;">"TTerm = Annotate A Prop"</span><span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<p>
+Using a variable type <code>A</code> makes the defined <code>TTerm</code> polymorphic. For lambdas, the type will be <code>((A)Lambda)TTerm</code> for some <code>A</code> (the type of variable names).
+</p>
+
+
+<p>
+We add <code>::</code> as an infix typing operator (we cannot use <code>:</code> because it is the HOL Light typing operator):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">parse_as_infix<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"::"</span>,<span style="color: #66D9EF;">(</span>16,<span style="color: #E6DB74;">"right"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+override_interface<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"::"</span>,<span style="color: #F8F8F2; background-color: #272822;">`Annotate</span>`<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+In HOL Light, it is fairly easy to install a custom printer that hides the lambda terms from our proofs. This makes it easier to focus on the logical proof without worrying about the computational terms:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #A6E22E;">chTermString</span> <span style="color: #FD971F;">tm</span> =
+  <span style="color: #F92672;">try</span> 
+    <span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">c</span>,<span style="color: #FD971F;">args</span> = strip_comb tm <span style="color: #FD5FF0; font-weight: bold;">in</span>
+    <span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">op</span> = <span style="color: #AE81FF;">(</span>fst o dest_const<span style="color: #AE81FF;">)</span> c <span style="color: #FD5FF0; font-weight: bold;">in</span>
+    <span style="color: #F92672;">if</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">String.</span>equal op <span style="color: #E6DB74;">"Annotate"</span><span style="color: #AE81FF;">)</span> 
+    <span style="color: #F92672;">then</span> <span style="color: #AE81FF;">(</span>string_of_term o hd o tl<span style="color: #AE81FF;">)</span> args 
+    <span style="color: #F92672;">else</span> <span style="color: #F92672;">failwith</span> <span style="color: #E6DB74;">""</span>
+  <span style="color: #F92672;">with</span> <span style="color: #F92672;">Failure</span> _ -&gt; <span style="color: #F92672;">failwith</span> <span style="color: #E6DB74;">"Not a Curry-Howard term."</span> <span style="color: #ff4500;">;;</span>
+
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #A6E22E;">print_chTerm</span> <span style="color: #FD971F;">fmt</span> = pp_print_string fmt o chTermString <span style="color: #ff4500;">;;</span>
+
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">hide_lam</span>,<span style="color: #FD971F;">show_lam</span> =
+  <span style="color: #AE81FF;">(</span><span style="color: #F92672;">fun</span> <span style="color: #66D9EF;">()</span> -&gt; install_user_printer <span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"print_chTerm"</span>,print_chTerm<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>,
+  <span style="color: #AE81FF;">(</span><span style="color: #F92672;">fun</span> <span style="color: #66D9EF;">()</span> -&gt; <span style="color: #F92672;">try</span> delete_user_printer <span style="color: #E6DB74;">"print_chTerm"</span>
+             <span style="color: #F92672;">with</span> <span style="color: #F92672;">Failure</span> _ -&gt; <span style="color: #F92672;">failwith</span> <span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"show_procs: "</span> <span style="color: #F8F8F0;">^</span>
+                                           <span style="color: #E6DB74;">"Curry-Howard lambda terms are already being shown normally."</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+
+hide_lam<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+We can hide lambda terms using <code>hide_lam()</code> or re-enable them using <code>show_lam()</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga7d77d3" class="outline-4">
+<h4 id="orga7d77d3"><span class="section-number-4">3.1.3</span> Inference Rules</h4>
+<div class="outline-text-4" id="text-3-1-3">
+<p>
+As before, we introduce an infix operator for logical consequence, i.e. the &ldquo;<i>turnstile</i>&rdquo;. We use a different symbol so that both embedding can co-exist:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">parse_as_infix<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"|=="</span>,<span style="color: #66D9EF;">(</span>11,<span style="color: #E6DB74;">"right"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+We introduce the inference rules in the same way and order as before:
+</p>
+<ol class="org-ol">
+<li>Identity (<code>ID</code>)</li>
+<li>Weakening (<code>W</code>)</li>
+<li>Contraction (<code>C</code>)</li>
+<li>Cut (<code>Cut</code>)</li>
+<li>Conjunction Right (<code>RX</code>)</li>
+<li>Conjunction Left1 (<code>L1X</code>)</li>
+<li>Conjunction Left2 (<code>L2X</code>)</li>
+<li>Implication Left (<code>L--&gt;</code>)</li>
+<li>Implication Right (<code>R--&gt;</code>)</li>
+</ol>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span class="linenr"> 0: </span><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">chRULES</span>,<span style="color: #FD971F;">chINDUCT</span>,<span style="color: #FD971F;">chCASES</span> = new_inductive_definition 
+<span class="linenr"> 1: </span>`<span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span>a x. ' <span style="color: #66D9EF;">(</span>x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #66D9EF;">)</span> <span style="color: #F8F8F0;">|==</span> x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 2: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a c x z. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 3: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a c x z. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> '<span style="color: #A6E22E;">(</span>x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">^</span> '<span style="color: #A6E22E;">(</span>x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 4: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> a c x z. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #66D9EF;">)</span> /\ <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>z <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> x <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|==</span> x <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 5: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> a b x y. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|==</span> x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #66D9EF;">)</span> /\ <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|==</span> y <span style="color: #F8F8F2; background-color: #272822;">::</span> b<span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #F8F8F2; background-color: #272822;">Prod</span> <span style="color: #A6E22E;">(</span>x,y<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #A6E22E;">(</span>a <span style="color: #F8F8F0;">%</span> b<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 6: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a b c x z. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Fst</span> x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #A6E22E;">(</span>z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>x <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #E6DB74;">(</span>a <span style="color: #F8F8F0;">%</span> b<span style="color: #E6DB74;">)</span><span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #A6E22E;">(</span>z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 7: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a b c x z. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Snd</span> x <span style="color: #F8F8F2; background-color: #272822;">::</span> b<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #A6E22E;">(</span>z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>x <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #E6DB74;">(</span>a <span style="color: #F8F8F0;">%</span> b<span style="color: #E6DB74;">)</span><span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #A6E22E;">(</span>z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 8: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> a b c f y z. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span><span style="color: #E6DB74;">(</span>f <span style="color: #F8F8F0;">@@</span> y<span style="color: #E6DB74;">)</span> <span style="color: #F8F8F2; background-color: #272822;">::</span> b<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span> /\ <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #A6E22E;">(</span>y <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> <span style="color: #F8F8F2; background-color: #272822;">D</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span>f <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #E6DB74;">(</span>a --&gt; b<span style="color: #E6DB74;">)</span><span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> c<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> /\
+<span class="linenr"> 9: </span><span style="color: #AE81FF;">(</span><span style="color: #F8F8F0;">!</span><span style="color: #F8F8F2; background-color: #272822;">G</span> a b x y. <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Var</span> x <span style="color: #F8F8F2; background-color: #272822;">::</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #A6E22E;">(</span>y <span style="color: #F8F8F2; background-color: #272822;">::</span> b<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> ==&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #F8F8F2; background-color: #272822;">Lam</span> x y <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #A6E22E;">(</span>a --&gt; b<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+<span class="linenr">10: </span>` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+The only difference is that we use annotated terms (~TTerm~s) instead of propositions (~Prop~s), so we include the corresponding Curry-Howard terms in each rule.
+</p>
+
+<p>
+As before, we break up and pre-process our rules, ready for use in our system:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #AE81FF;">[</span><span style="color: #FD971F;">chID</span>;
+     <span style="color: #FD971F;">chW</span>; <span style="color: #FD971F;">chC</span>; <span style="color: #FD971F;">chCut</span>; 
+     <span style="color: #FD971F;">chX_R</span>; <span style="color: #FD971F;">chX_L1</span>; <span style="color: #FD971F;">chX_L2</span>;
+     <span style="color: #FD971F;">chI_L</span>; <span style="color: #FD971F;">chI_R</span>
+    <span style="color: #AE81FF;">]</span> = 
+  map <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MIMP_RULE</span> o <span style="color: #F8F8F2; background-color: #272822;">SPEC_ALL</span> o <span style="color: #F8F8F2; background-color: #272822;">REWRITE_RULE</span><span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">IMP_CONJ</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span> 
+    <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">CONJUNCTS</span> chRULES<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+If we are doing construction proofs, it help to be able to instantiate variables of type <code>Lambda</code> easily using metavariables from the proof state. These shortcut methods greatly facilitate this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #A6E22E;">lamConstruct</span> <span style="color: #FD971F;">p</span> <span style="color: #FD971F;">st</span> = 
+  <span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #A6E22E;">construct</span> <span style="color: #FD971F;">m</span> =
+    <span style="color: #F92672;">if</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">String.</span>equal p <span style="color: #66D9EF;">(</span><span style="color: #A6E22E;">(</span>fst o dest_var<span style="color: #A6E22E;">)</span> m<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> 
+    <span style="color: #F92672;">then</span> instantiate <span style="color: #AE81FF;">(</span>top_inst st<span style="color: #AE81FF;">)</span> m
+    <span style="color: #F92672;">else</span> <span style="color: #F92672;">failwith</span> <span style="color: #E6DB74;">"Not found!"</span> <span style="color: #FD5FF0; font-weight: bold;">in</span>
+  tryfind construct <span style="color: #AE81FF;">(</span>top_metas st<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #A6E22E;">top_constr</span> <span style="color: #FD971F;">s</span> = lamConstruct s <span style="color: #AE81FF;">(</span>p<span style="color: #66D9EF;">()</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+Finally, we mentioned earlier how we sometimes need to provide a typed <code>mempty</code>. Our types have started becoming quite verbose (and are still variable), so we write a quick function to make this easier:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #A6E22E;">chEmpty</span> <span style="color: #FD971F;">ty</span> = inst <span style="color: #AE81FF;">[</span>ty,`:<span style="color: #F8F8F2; background-color: #272822;">A</span>`<span style="color: #AE81FF;">]</span> <span style="color: #F8F8F2; background-color: #272822;">`mempty</span>:<span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">(</span><span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">A</span><span style="color: #A6E22E;">)</span><span style="color: #F8F8F2; background-color: #272822;">Lambda</span><span style="color: #66D9EF;">)</span><span style="color: #F8F8F2; background-color: #272822;">TTerm</span><span style="color: #AE81FF;">)</span>multiset` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<p>
+Now we are ready to do some proofs!
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd94c0a1" class="outline-3">
+<h3 id="orgd94c0a1"><span class="section-number-3">3.2</span> Proofs</h3>
+<div class="outline-text-3" id="text-3-2">
+</div>
+<div id="outline-container-org1f50656" class="outline-4">
+<h4 id="org1f50656"><span class="section-number-4">3.2.1</span> A Construction Proof</h4>
+<div class="outline-text-4" id="text-3-2-1">
+<p>
+We revisit the same proof from before. Now we want to find which lambda term matches this particular type. We use existential quantification at the meta-level (HOL):
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">g `?<span style="color: #66D9EF;">P.</span> mempty <span style="color: #F8F8F0;">|==</span> <span style="color: #F8F8F2; background-color: #272822;">P</span> <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span> --&gt; <span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #AE81FF;">)</span>` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+Warning: Free variables in goal: X, Y
+val it : goalstack = 1 subgoal (1 total)
+
+`?P. mempty |== X % Y --&gt; Y % X`
+</pre>
+
+
+<p>
+The <code>META_EXISTS_TAC</code> tactic gets rid of the the existential quantifier, but adds the variable <code>P</code> as a metavariable. This allows us to instantiate it as the proof progresses:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">META_EXISTS_TAC</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(P:(?125766)Lambda)`;
+
+`mempty |== X % Y --&gt; Y % X`
+</pre>
+
+
+<p>
+The rest of the proof progresses exactly as before. Especially given that we have hidden the lamdba terms, there is virtually no difference in the proof process:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chI_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+
+`' X % Y |== Y % X`
+</pre>
+
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chC<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+
+`' X % Y^' X % Y |== Y % X`
+</pre>
+
+
+<p>
+Do not be fooled, however. This is Curry-Howard in all its glory!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">show_lam<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+p<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+
+`' (Var x0 :: (X % Y))^' (Var x0 :: (X % Y)) |== y0 :: (Y % X)`
+</pre>
+
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chX_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 2 subgoals (2 total)
+Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+
+`' (Var x0 :: (X % Y)) |== y2 :: X`
+
+`' (Var x0 :: (X % Y)) |== x2 :: Y`
+</pre>
+
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chX_L2<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (2 total)
+Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+
+`' (Snd (Var x0) :: Y) |== x2 :: Y`
+</pre>
+
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+
+`' (Var x0 :: (X % Y)) |== y2 :: X`
+</pre>
+
+
+<p>
+We can hide the lambda terms again at any point.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">hide_lam<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chX_L1<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = No subgoals
+Metas: `(x2:(?125766)Lambda)`; `(y2:(?125766)Lambda)`; `(x0:?125766)`; `(y0:(?125766)Lambda)`; `(P:(?125766)Lambda)`;
+</pre>
+
+
+<p>
+Our proof is complete and we can generate out theorem, though the existential quantifier makes is hardly usable. Validating the proof, however, is quite important, to ensure the delayed metavariable instantiation are still sound:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">top_thm<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- ?P. mempty |== X % Y --&gt; Y % X
+</pre>
+
+
+<p>
+What is more interesting is that we can instantiate the original metavariable <code>P</code> to construct our lamdba term:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">top_constr <span style="color: #E6DB74;">"P"</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : term = `Lam x0 (Prod (Snd (Var x0),Fst (Var x0)))`
+</pre>
+
+
+<p>
+This is a direct translation of the proof we just performed into lambda calculus! It is a function that takes an argument <code>x0</code> (assumed to be a product) and returns a product with <code>x0</code>&rsquo;s elements flipped (<code>Snd</code> followed by <code>Fst</code>). This was all constructed automatically for us.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2441c29" class="outline-4">
+<h4 id="org2441c29"><span class="section-number-4">3.2.2</span> A Type-checking Proof</h4>
+<div class="outline-text-4" id="text-3-2-2">
+<p>
+If we replace <code>P</code> in the previous goal with the term we constructed, we can start a type-checking proof, to prove that <code>P</code> does indeed have the right type:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">g <span style="color: #F8F8F2; background-color: #272822;">`mempty</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #F8F8F2; background-color: #272822;">Lam</span> x <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Prod</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Snd</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Var</span> x<span style="color: #A6E22E;">)</span>,<span style="color: #F8F8F2; background-color: #272822;">Fst</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Var</span> x<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span> --&gt; <span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #AE81FF;">)</span>` <span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+Warning: Free variables in goal: X, Y, x
+val it : goalstack = 1 subgoal (1 total)
+
+`mempty |== X % Y --&gt; Y % X`
+</pre>
+
+
+<p>
+We can follow the exact same proof as before:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chI_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chC<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chX_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chX_L2<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chX_L1<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = No subgoals
+</pre>
+
+
+<p>
+And once we are done, we can obtain a theorem, proving our type is correct:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">show_lam<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+top_thm<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm =
+  |- mempty |== Lam x (Prod (Snd (Var x),Fst (Var x))) :: (X % Y --&gt; Y % X)
+</pre>
+
+
+<div class="org-src-container">
+<pre class="src src-ocaml">hide_lam<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org9172a6d" class="outline-4">
+<h4 id="org9172a6d"><span class="section-number-4">3.2.3</span> Proving and Reusing Lemmas</h4>
+<div class="outline-text-4" id="text-3-2-3">
+<p>
+So far, we have been looking at interactive proofs. Our tactics can be packaged in the traditional HOL Light style. However, we use our own, extended tacticals, which unfortunately cannot be infix (at least until we find a way to add this to camlp5).
+</p>
+
+<p>
+Here is a packaged proof of commutativity of conjunction (without the implication this time):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #F8F8F2; background-color: #272822;">TIMES_COMM</span> = prove_seq<span style="color: #AE81FF;">(</span> `' <span style="color: #66D9EF;">(</span>a <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> <span style="color: #F8F8F0;">|==</span> <span style="color: #F8F8F2; background-color: #272822;">Prod</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Snd</span> a, <span style="color: #F8F8F2; background-color: #272822;">Fst</span> a<span style="color: #66D9EF;">)</span> <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #66D9EF;">)</span>` ,
+                            <span style="color: #F8F8F2; background-color: #272822;">ETHENL</span> 
+                              <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">ETHEN</span> <span style="color: #A6E22E;">(</span>ruleseq chC<span style="color: #A6E22E;">)</span> <span style="color: #A6E22E;">(</span>ruleseq chX_R<span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span>
+                              <span style="color: #66D9EF;">[</span>
+                                <span style="color: #F8F8F2; background-color: #272822;">ETHEN</span> <span style="color: #A6E22E;">(</span>ruleseq chX_L2<span style="color: #A6E22E;">)</span> <span style="color: #A6E22E;">(</span>ruleseq chID<span style="color: #A6E22E;">)</span>;
+                                <span style="color: #F8F8F2; background-color: #272822;">ETHEN</span> <span style="color: #A6E22E;">(</span>ruleseq chX_L1<span style="color: #A6E22E;">)</span> <span style="color: #A6E22E;">(</span>ruleseq chID<span style="color: #A6E22E;">)</span> <span style="color: #66D9EF;">]</span>
+                   <span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+val TIMES_COMM : thm = |- ' (a :: (X % Y)) |== Prod (Snd a,Fst a) :: (Y % X)
+</pre>
+
+
+<p>
+Lemmas like this are only useful if we can employ them in other proofs. Given our convenient tactics, it would be nice if we could use lemmas like this to derive new inference rules.
+</p>
+
+<p>
+In this particular case, we can construct an inference rule that commutes a conjunction on the right-hand side (and later on the left-hand side) of the sequent. The rule can be expressed like this:
+</p>
+
+<pre class="example" id="org32bf7e4">
+`G |== a :: (X % Y) ===&gt; G |== b :: (Y % X)`
+</pre>
+
+<p>
+The question is, what is the appropriate Curry-Howard translation for this rule? In other words, what should the lambda terms <code>a</code> and <code>b</code> be?
+</p>
+
+<p>
+A construction proof can give the answer quite easily:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">g `<span style="color: #AE81FF;">?a</span>:<span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">A</span><span style="color: #AE81FF;">)</span><span style="color: #F8F8F2; background-color: #272822;">Lambda</span> b. <span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|==</span> a <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #AE81FF;">)</span> ===&gt; <span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">|==</span> b <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #AE81FF;">)</span>` <span style="color: #ff4500;">;;</span>
+e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">REPEAT</span> <span style="color: #F8F8F2; background-color: #272822;">META_EXISTS_TAC</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MDISCH_TAC</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(a:(A)Lambda)`; `(b:(A)Lambda)`;
+
+  0 [`G |== X % Y`]
+
+`G |== Y % X`
+</pre>
+
+
+<p>
+Note that <code>MDISCH_TAC</code> is an Isabelle Light tactic. It is the same as <code>DISCH_TAC</code>, but for our special meta-implication.
+</p>
+
+<p>
+At this point we need to make smart use of <code>Cut</code> in order to apply our <code>TIMES_COMM</code> lemma. Doing this in vanilla HOL Light would be quite tedious. Our rule instantiation mechanics make it very easy:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>drule_seqtac <span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">`c</span>`,<span style="color: #F8F8F2; background-color: #272822;">`Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span>`;<span style="color: #F8F8F2; background-color: #272822;">`D</span>`,chEmpty `:<span style="color: #66D9EF;">A`</span><span style="color: #66D9EF;">]</span><span style="color: #66D9EF;"> chCut</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span> <span style="color: #75715E;">(* </span><span style="color: #75715E;">cut! </span><span style="color: #75715E;">*)</span>
+</pre>
+</div>
+
+<pre class="example" id="org6a41f68">
+Warning: inventing type variables
+Warning: inventing type variables
+val it : goalstack = 2 subgoals (2 total)
+Metas: `(x0:(A)Lambda)`; `(a:(A)Lambda)`; `(b:(A)Lambda)`;
+
+  0 [`G |== Y % X`]
+
+`G |== Y % X`
+
+`' X % Y |== Y % X`
+</pre>
+
+<p>
+Now the first (bottom) goal matches our lemma exactly, whereas the second one matches the assumption. Then we are done!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq <span style="color: #F8F8F2; background-color: #272822;">TIMES_COMM</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span> <span style="color: #75715E;">(* </span><span style="color: #75715E;">Using the lemma we proved earlier </span><span style="color: #75715E;">*)</span>
+eseq <span style="color: #AE81FF;">(</span>seqassumption<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+top_thm<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- ?a b. G |== X % Y ===&gt; G |== Y % X
+</pre>
+
+
+<p>
+Based on this proof, <code>a</code> is just itself:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml">top_constr <span style="color: #E6DB74;">"a"</span> <span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<pre class="example">
+val it : term = `a`
+</pre>
+
+
+<p>
+And given that, <code>b</code> should be <code>a</code> with the elements swapped:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">top_constr <span style="color: #E6DB74;">"b"</span> <span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<pre class="example">
+val it : term = `Prod (Snd a,Fst a)`
+</pre>
+
+
+<p>
+Replace the constructed <code>a</code> and <code>b</code> in the original goal, and package the proof:
+</p>
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">chTimesCommR</span> = prove_seq <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">`G</span> <span style="color: #F8F8F0;">|==</span> a:<span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">A</span><span style="color: #66D9EF;">)</span><span style="color: #66D9EF;">Lambda :: </span><span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">X % Y</span><span style="color: #66D9EF;">)</span><span style="color: #66D9EF;"> ===&gt;</span>
+<span style="color: #66D9EF;">                                         G |== Prod </span><span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">Snd a,Fst a</span><span style="color: #66D9EF;">)</span><span style="color: #66D9EF;"> :: </span><span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">Y % X</span><span style="color: #66D9EF;">)</span><span style="color: #66D9EF;">` ,</span>
+<span style="color: #66D9EF;">                                       ETHENL </span><span style="color: #66D9EF;">(</span><span style="color: #66D9EF;"> ETHEN</span>
+<span style="color: #66D9EF;">                                                  </span><span style="color: #A6E22E;">(</span><span style="color: #66D9EF;">ETAC </span><span style="color: #E6DB74;">(</span><span style="color: #66D9EF;">MDISCH_TAC</span><span style="color: #E6DB74;">)</span><span style="color: #A6E22E;">)</span>
+<span style="color: #66D9EF;">                                                  </span><span style="color: #A6E22E;">(</span><span style="color: #66D9EF;">drule_seqtac </span><span style="color: #E6DB74;">[</span><span style="color: #66D9EF;">`c`,`Y % X`;`D`,chEmpty `:A`</span><span style="color: #E6DB74;">]</span><span style="color: #66D9EF;"> chCut</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;"> </span><span style="color: #66D9EF;">)</span><span style="color: #66D9EF;"> </span><span style="color: #66D9EF;">[</span>
+<span style="color: #66D9EF;">                                           ruleseq TIMES_COMM;</span>
+<span style="color: #66D9EF;">                                           seqassumption</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+Warning: inventing type variables
+val chTimesCommR : thm = |- G |== X % Y ===&gt; G |== Y % X
+</pre>
+
+
+<p>
+And <i>voila</i>! A brand new, derived inference rule!
+</p>
+
+<p>
+Let&rsquo;s do the same for the left-hand side. First construct our lambda terms:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">g `<span style="color: #AE81FF;">?a</span>:<span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">A</span><span style="color: #AE81FF;">)</span><span style="color: #F8F8F2; background-color: #272822;">Lambda</span> b. <span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #AE81FF;">(</span>a <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F8F8F2; background-color: #272822;">C</span>  ===&gt; <span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #AE81FF;">(</span>b <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F8F8F2; background-color: #272822;">C</span>` <span style="color: #ff4500;">;;</span>
+e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">REPEAT</span> <span style="color: #F8F8F2; background-color: #272822;">META_EXISTS_TAC</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">MDISCH_TAC</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>rule_seqtac <span style="color: #66D9EF;">[</span><span style="color: #F8F8F2; background-color: #272822;">`a</span>`,<span style="color: #F8F8F2; background-color: #272822;">`X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span>`;<span style="color: #F8F8F2; background-color: #272822;">`G</span>`,`' <span style="color: #A6E22E;">(</span>b <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #E6DB74;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #E6DB74;">)</span><span style="color: #A6E22E;">)</span>`<span style="color: #66D9EF;">]</span> chCut<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq <span style="color: #F8F8F2; background-color: #272822;">TIMES_COMM</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>seqassumption<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+top_thm<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+top_constr <span style="color: #E6DB74;">"a"</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : term = `Prod (Snd b,Fst b)`
+</pre>
+
+
+<p>
+And then instantiate the rule and package the proof:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">show_lam<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+<span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">chTimesCommL</span> = prove_seq <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">`G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">Prod</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Snd</span> a,<span style="color: #F8F8F2; background-color: #272822;">Fst</span> a<span style="color: #A6E22E;">)</span> <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F8F8F2; background-color: #272822;">C</span>  ===&gt;
+                                <span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #66D9EF;">(</span>a <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F8F8F2; background-color: #272822;">C</span>` ,
+                              <span style="color: #F8F8F2; background-color: #272822;">ETHENL</span> <span style="color: #66D9EF;">(</span> <span style="color: #F8F8F2; background-color: #272822;">ETHEN</span>
+                                         <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">ETAC</span> <span style="color: #E6DB74;">(</span><span style="color: #F8F8F2; background-color: #272822;">MDISCH_TAC</span><span style="color: #E6DB74;">)</span><span style="color: #A6E22E;">)</span>
+                                         <span style="color: #A6E22E;">(</span>rule_seqtac <span style="color: #E6DB74;">[</span><span style="color: #F8F8F2; background-color: #272822;">`a</span>`,<span style="color: #F8F8F2; background-color: #272822;">`X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span>`;<span style="color: #F8F8F2; background-color: #272822;">`G</span>`,`' <span style="color: #FD971F;">(</span>a <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F92672;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #F92672;">)</span><span style="color: #FD971F;">)</span>`<span style="color: #E6DB74;">]</span> chCut<span style="color: #A6E22E;">)</span> <span style="color: #66D9EF;">)</span> <span style="color: #66D9EF;">[</span>
+                                  ruleseq <span style="color: #F8F8F2; background-color: #272822;">TIMES_COMM</span>;
+                                  seqassumption<span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+Warning: inventing type variables
+Warning: inventing type variables
+Warning: inventing type variables
+val chTimesCommL : thm =
+  |- G^' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C ===&gt;
+     G^' (a :: (Y % X)) |== z :: C
+</pre>
+
+
+<p>
+We can do the same without explicitly stating the computational terms we want to construct. This way, if we change anything in the correspondence, the lemma will still be proven:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #FD5FF0; font-weight: bold;">let</span> <span style="color: #FD971F;">chTimesCommL</span> = constr_prove <span style="color: #AE81FF;">(</span>`?a b. <span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #66D9EF;">(</span>b <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F8F8F2; background-color: #272822;">C</span>  ===&gt;
+                                   <span style="color: #F8F8F2; background-color: #272822;">G</span> <span style="color: #F8F8F0;">^</span> ' <span style="color: #66D9EF;">(</span>a <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span> <span style="color: #F8F8F0;">|==</span> z <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F8F8F2; background-color: #272822;">C</span>` ,
+                                 <span style="color: #F8F8F2; background-color: #272822;">ETHENL</span> <span style="color: #66D9EF;">(</span> <span style="color: #F8F8F2; background-color: #272822;">ETHEN</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">SEQTAC</span> <span style="color: #F8F8F2; background-color: #272822;">MDISCH_TAC</span><span style="color: #A6E22E;">)</span>
+                                            <span style="color: #A6E22E;">(</span>rule_seqtac <span style="color: #E6DB74;">[</span><span style="color: #F8F8F2; background-color: #272822;">`a</span>`,<span style="color: #F8F8F2; background-color: #272822;">`X</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">Y</span>`;<span style="color: #F8F8F2; background-color: #272822;">`G</span>`,`' <span style="color: #FD971F;">(</span>a <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #F92672;">(</span><span style="color: #F8F8F2; background-color: #272822;">Y</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">X</span><span style="color: #F92672;">)</span><span style="color: #FD971F;">)</span>`<span style="color: #E6DB74;">]</span> chCut<span style="color: #A6E22E;">)</span> <span style="color: #66D9EF;">)</span> 
+                                   <span style="color: #66D9EF;">[</span>
+                                     ruleseq <span style="color: #F8F8F2; background-color: #272822;">TIMES_COMM</span>;
+                                     seqassumption
+                                   <span style="color: #66D9EF;">]</span>
+                     <span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+Warning: inventing type variables
+Warning: inventing type variables
+Warning: inventing type variables
+Warning: inventing type variables
+val chTimesCommL : thm =
+  |- G^' (Prod (Snd a,Fst a) :: (X % Y)) |== z :: C ===&gt;
+     G^' (a :: (Y % X)) |== z :: C
+</pre>
+
+
+<p>
+Now that we have 2 new inference rules, let&rsquo;s see them in action in a new proof:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">hide_lam<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+g `? <span style="color: #66D9EF;">P.</span> mempty <span style="color: #F8F8F0;">|==</span> <span style="color: #F8F8F2; background-color: #272822;">P</span> <span style="color: #F8F8F2; background-color: #272822;">::</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">(</span><span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">A</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">B</span><span style="color: #A6E22E;">)</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">C</span><span style="color: #66D9EF;">)</span> --&gt; <span style="color: #66D9EF;">(</span><span style="color: #F8F8F2; background-color: #272822;">C</span> <span style="color: #F8F8F0;">%</span> <span style="color: #A6E22E;">(</span><span style="color: #F8F8F2; background-color: #272822;">B</span> <span style="color: #F8F8F0;">%</span> <span style="color: #F8F8F2; background-color: #272822;">A</span><span style="color: #A6E22E;">)</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>` <span style="color: #ff4500;">;;</span>
+e <span style="color: #AE81FF;">(</span><span style="color: #F8F8F2; background-color: #272822;">REPEAT</span> <span style="color: #F8F8F2; background-color: #272822;">META_EXISTS_TAC</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chI_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
+
+`' (A % B) % C |== C % B % A`
+</pre>
+
+
+<p>
+Let&rsquo;s swap things on the right-hand side:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chTimesCommR<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (1 total)
+Metas: `(a1:(?126376)Lambda)`; `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
+
+`' (A % B) % C |== (B % A) % C`
+</pre>
+
+
+<p>
+Keep going:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chC<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chX_R<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+
+eseq <span style="color: #AE81FF;">(</span>ruleseq chX_L1<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (2 total)
+Metas: `(x3:(?126376)Lambda)`; `(y3:(?126376)Lambda)`; `(a1:(?126376)Lambda)`; `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
+
+`' A % B |== B % A`
+</pre>
+
+
+<p>
+The perfect goal to use <code>chTimesCommL</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chTimesCommL<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : goalstack = 1 subgoal (2 total)
+Metas: `(x3:(?126376)Lambda)`; `(y3:(?126376)Lambda)`; `(a1:(?126376)Lambda)`; `(x0:?126376)`; `(y0:(?126376)Lambda)`; `(P:(?126376)Lambda)`;
+
+`' B % A |== B % A`
+</pre>
+
+
+
+<p>
+The rest is straightforward:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">eseq <span style="color: #AE81FF;">(</span>ruleseq chID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+
+eseq <span style="color: #AE81FF;">(</span>ruleseq chX_L2<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+eseq <span style="color: #AE81FF;">(</span>ruleseq chID<span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span>
+
+top_thm<span style="color: #AE81FF;">()</span><span style="color: #ff4500;">;;</span>
+</pre>
+</div>
+
+<pre class="example">
+val it : thm = |- ?P. mempty |== (A % B) % C --&gt; C % B % A
+</pre>
+
+
+<p>
+And why not construct the lambda term for this slightly more complex type?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml">top_constr <span style="color: #E6DB74;">"P"</span><span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<pre class="example">
+val it : term =
+  `Lam x0
+   (Prod
+   (Snd (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))),
+    Fst (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0)))))`
+</pre>
+
+
+<p>
+Due to the (implicit) cuts, our constructed term can be reduced with rewritting:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ocaml"><span style="color: #F8F8F2; background-color: #272822;">REWRITE_CONV</span><span style="color: #AE81FF;">[</span>lamFst;lamSnd<span style="color: #AE81FF;">]</span> <span style="color: #AE81FF;">(</span>top_constr <span style="color: #E6DB74;">"P"</span><span style="color: #AE81FF;">)</span><span style="color: #ff4500;">;;</span> 
+</pre>
+</div>
+
+<pre class="example">
+val it : thm =
+  |- Lam x0
+     (Prod
+     (Snd (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))),
+      Fst (Prod (Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0))),Snd (Var x0))))) =
+     Lam x0
+     (Prod (Snd (Var x0),Prod (Snd (Fst (Var x0)),Fst (Fst (Var x0)))))
+</pre>
+
+
+<p>
+If <code>Fst</code> and <code>Snd</code> were primitive constructors, we would not be able to use rewritting like this, nor can we define a notion of cut elimination.
+</p>
+
+<p>
+We could also define function application as a function in HOL instead of a primitive constructor. However, this would require a definition of variable substitution, which in turn would require managing bound variables. This is notoriously hard, especially with the limited features of HOL Light, and therefore beyond the scope of our tutorial. Other theorem provers (such as Isabelle or HOL4) which support appropriate mechanisms (Higher Order Abstract Syntax, de Bruijn indexes etc.) would be more suitable for this purpose.
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Petros Papapanagiotou</p>
+<p class="date">Created: 2020-12-06 Sun 16:18</p>
+</div>
+</body>
+</html>

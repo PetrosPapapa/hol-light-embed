@@ -3,7 +3,7 @@
 #+AUTHOR: Petros Papapanagiotou
 #+PROPERTY: header-args :results verbatim :session *OCaml* :exports both :eval no-export :tangle yes
 
-#+SETUPFILE: https://fniessen.github.io/org-html-themes/setup/theme-readtheorg.setup
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 #+HTML_HEAD_EXTRA: <style type="text/css"> pre.src {background-color: #3E3D31; color: #F8F8F0;}</style>
 #+OPTIONS: toc:4
 
