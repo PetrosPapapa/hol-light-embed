@@ -1,35 +1,38 @@
-# Object level reasoning with embedded logics in HOL Light
+# Object-level reasoning with logics encoded in HOL Light
 
 >Petros Papapanagiotou  
 >Jacques Fleuriot  
->[Centre of Intelligent Systems and their Applications](http://web.inf.ed.ac.uk/cisa)  
+>[Artificial Intelligence Modelling Lab](https://aiml.inf.ed.ac.uk/)  
+>[Artificial Intelligence and its Applications Institute](https://web.inf.ed.ac.uk/aiai)  
 >[School of Informatics, University of Edinburgh](https://www.ed.ac.uk/informatics/)  
 
 
 ## About
 
-This is a generic framework to perform object level reasoning with embedded logics in [HOL Light](https://www.cl.cam.ac.uk/~jrh13/hol-light/).
+This is a generic framework to perform object level reasoning with logics encoded in [HOL Light](https://www.cl.cam.ac.uk/~jrh13/hol-light/).
 
 It provides procedural tactics inspired by [Isabelle](https://isabelle.in.tum.de/)'s rule/erule/drule/frule.
 
 It also supports correspondences with computational terms in the style of Curry-Howard.
 
+**An online tutorial with simple examples can be found [HERE](https://petrospapapa.github.io/hol-light-embed/CurryHoward.html)**.
+
 _Further information and background will be provided in a forthcoming publication._
 
 ### What this library does
 
-Assuming you have an inductively defined logic embedded in HOL, the library allows you to prove object level theorems within your embedded logic. All the boilerplate around rule matching and meta-level term management is taken care of automatically without any additional coding.
+Assuming you have an inductively defined logic encoded in HOL, the library allows you to prove object level theorems within your embedded logic. All the boilerplate around rule matching and meta-level term management is taken care of automatically without any additional coding.
 
-Assuming an embedding of a constructive correspondence of a logic to some computational calculus (in the style of Curry-Howard) the library additionally automates the construction of the terms as the proof progresses. This is accomplished through the use of metavariables and delayed instantiation. 
+Assuming an encoding of a constructive correspondence of a logic to some computational calculus (in the style of Curry-Howard) the library additionally automates the construction of the terms as the proof progresses. This is accomplished through the use of metavariables and delayed instantiation. 
 
 In effect, this allows the construction of any program via proof using any logic correspondence that can be embedded in HOL Light in the ways described below.
 
-It is worth noting that the tactics can be used programmatically as well, e.g. towards automated proof tools for the embedded logic.
+It is worth noting that the tactics can be used programmatically as well, e.g. towards automated proof tools for the encoded logic.
 
 
 ### What this library does NOT do
 
-It does **not** allow you to perform any meta-level reasoning (such as cut-elimination proofs). It deals with shallow embeddings where the derivation semantics of the logic are mapped to HOL implication. At this level it is not possible to reason about the semantics of the embedded logic.
+It does **not** allow you to perform any meta-level reasoning (such as cut-elimination proofs), as the derivation semantics of the encoded logic are mapped to HOL implication. At this level it is not possible to reason about the semantics of the encoded logic.
 
 
 ## Getting started
@@ -96,9 +99,9 @@ loads ("embed/sequent.ml");;
 
 The usage information below highlights the main available tools and functionality. This is much easier to follow in the context of the examples provided:
 
-* [Examples/CurryHoward.ml](https://github.com/PetrosPapapa/hol-light-embed/blob/master/Examples/CurryHoward.ml) contains 2 embeddings. The first one is a subset of propositional logic involving only conjunction and implication. The second is the Curry-Howard correspondence for the same logic. Some example interactive proofs are also included. The 2 embeddings can be contrasted to show how the same proofs can work with or without a computational correspondence.
-* [Examples/ILL.ml](https://github.com/PetrosPapapa/hol-light-embed/blob/master/Examples/ILL.ml) includes a simple embedding of Intuitionistic Linear Logic and some packaged proofs.
-* [Examples/pas/](https://github.com/PetrosPapapa/hol-light-embed/tree/master/Examples/pas) includes an embedding of the Propositions-as-Sessions correspondence described in [this paper by Philip Wadler](https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-sessions/propositions-as-sessions-jfp.pdf). This is a correspondence between Classical Linear Logic and a session type calculus named CP. The example also includes the implementation of some automated proof procedures for Classical Linear Logic to demonstrate how the tactics can be used programmatically. Example proofs can be found in [Examples/pas/examples.ml](https://github.com/PetrosPapapa/hol-light-embed/blob/master/Examples/pas/examples.ml).
+* [Examples/CurryHoward.ml](https://github.com/PetrosPapapa/hol-light-embed/blob/master/Examples/CurryHoward.ml) contains 2 encodings. The first one is a subset of propositional logic involving only conjunction and implication. The second is the Curry-Howard correspondence for the same logic. Some example interactive proofs are also included. The 2 embeddings can be contrasted to show how the same proofs can work with or without a computational correspondence. **A full online tutorial explaining these encodings can be found [HERE](https://petrospapapa.github.io/hol-light-embed/CurryHoward.html)**.
+* [Examples/ILL.ml](https://github.com/PetrosPapapa/hol-light-embed/blob/master/Examples/ILL.ml) includes a simple encoding of Intuitionistic Linear Logic and some packaged proofs.
+* [Examples/pas/](https://github.com/PetrosPapapa/hol-light-embed/tree/master/Examples/pas) includes an encoding of the Propositions-as-Sessions correspondence described in [this paper by Philip Wadler](https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-sessions/propositions-as-sessions-jfp.pdf). This is a correspondence between Classical Linear Logic and a session type calculus named CP. The example also includes the implementation of some automated proof procedures for Classical Linear Logic to demonstrate how the tactics can be used programmatically. Example proofs can be found in [Examples/pas/examples.ml](https://github.com/PetrosPapapa/hol-light-embed/blob/master/Examples/pas/examples.ml).
 
 
 
@@ -106,12 +109,12 @@ The usage information below highlights the main available tools and functionalit
 
 The library can be used to perform object level reasoning with embedded logics. The examples provided above can put much of this information in context.
 
+**An online tutorial explaining the Curry Howard example can be found [HERE](https://petrospapapa.github.io/hol-light-embed/CurryHoward.html)**.
+
 
 ### Embedded logics
 
-A typical way of embedding a logic in HOL Light is through an inductive definition of its inference rules using `new_inductive_definition`. This involves the definition of a consequence operator (turnstile). Valid derivations are defined inductively using standard (classical) HOL implication. 
-
-Although this is sometimes refered to as a **deep embedding** in the literature, it is really a **shallow** one as we do not formalise the semantics of the logic.
+A typical way of encoding a logic in HOL Light is through an inductive definition of its inference rules using `new_inductive_definition`. This involves the definition of a consequence operator (turnstile). Valid derivations are defined inductively using standard (classical) HOL implication. 
 
 The library currently only supports a **sequent calculus** style, although we have plans for a **natural deduction** setup in the future. It supports one-sided, two-sided, classical, and intuitionistic (single conclusion) sequents.
 
