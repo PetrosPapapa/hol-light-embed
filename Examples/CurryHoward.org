@@ -527,7 +527,7 @@ We can hide lambda terms using ~hide_lam()~ or re-enable them using ~show_lam()~
   As before, we introduce an infix operator for logical consequence, i.e. the "/turnstile/". We use a different symbol so that both embedding can co-exist:
 
  #+begin_src ocaml :results silent
- parse_as_infix("|==",(11,"right"));
+ parse_as_infix("|==",(11,"right"));;
  #+end_src
 
  We introduce the inference rules in the same way and order as before:
